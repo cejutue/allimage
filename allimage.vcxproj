@@ -1,0 +1,735 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4F583574-93B9-4E40-AD42-1AE36873894E}</ProjectGuid>
+    <RootNamespace>utility</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>allimage</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../$(Configuration)$(PlatformShortName)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../$(Configuration)$(PlatformShortName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../middle/$(ProjectName)/$(Configuration)/$(Platform)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../middle/$(ProjectName)/$(Configuration)/$(Platform)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../$(Configuration)$(PlatformShortName)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../$(Configuration)$(PlatformShortName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../middle/$(ProjectName)/$(Configuration)/$(Platform)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../middle/$(ProjectName)/$(Configuration)/$(Platform)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectName)d</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>KTX_FEATURE_WRITE=1;KHRONOS_STATIC;LIBKTX;XML_STATIC;MG_ENABLE_MQTT_BROKER;SQLITE_HAS_CODEC=1;SQLCIPHER_CRYPTO_LIBTOMCRYPT;MG_ENABLE_SSL;MG_SSL_IF=MG_SSL_IF_MBEDTLS;MG_SSL_MBED_DUMMY_RANDOM;USE_MBEDTLS;MG_ENABLE_GETADDRINFO;MG_ENABLE_SYNC_RESOLVER;MG_ENABLE_CALLBACK_USERDATA=1;WIN32;_DEBUG;_WINDOWS;_USRDLL;GG_DLL;GG_IMPLEMENTATION;TINYXML2_EXPORT;_HAVE_SQLITE_CONFIG_H;JSON_DLL_BUILD;HAVE_CONFIG_H;PNG_NO_CONFIG_H;COMPILED_FROM_DSP;PNG_USER_PRIVATEBUILD;ASTCENC_NEON=0;ASTCENC_SSE=41;ASTCENC_AVX=2;ASTCENC_POPCNT=1;ASTCENC_F16C=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <OpenMPSupport>true</OpenMPSupport>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <AdditionalLibraryDirectories>../$(Configuration)$(PlatformShortName)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>allimage.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>KTX_FEATURE_WRITE=1;KHRONOS_STATIC;LIBKTX;XML_STATIC;MG_ENABLE_MQTT_BROKER;SQLITE_HAS_CODEC=1;SQLCIPHER_CRYPTO_LIBTOMCRYPT;MG_ENABLE_SSL;MG_SSL_IF=MG_SSL_IF_MBEDTLS;MG_SSL_MBED_DUMMY_RANDOM;USE_MBEDTLS;MG_ENABLE_GETADDRINFO;MG_ENABLE_SYNC_RESOLVER;MG_ENABLE_CALLBACK_USERDATA=1;WIN32;_DEBUG;_WINDOWS;_USRDLL;GEOSTAR_DLL;GG_IMPLEMENTATION;TINYXML2_EXPORT;_HAVE_SQLITE_CONFIG_H;JSON_DLL_BUILD;HAVE_CONFIG_H;PNG_NO_CONFIG_H;COMPILED_FROM_DSP;PNG_USER_PRIVATEBUILD;ASTCENC_NEON=0;ASTCENC_SSE=41;ASTCENC_AVX=2;ASTCENC_POPCNT=1;ASTCENC_F16C=1;BASISU_SUPPORT_OPENCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <OpenMPSupport>true</OpenMPSupport>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <AdditionalLibraryDirectories>../$(Configuration)$(PlatformShortName)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>allimage.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>KTX_FEATURE_WRITE=1;KHRONOS_STATIC;LIBKTX;XML_STATIC;MG_ENABLE_MQTT_BROKER;SQLITE_HAS_CODEC=1;SQLCIPHER_CRYPTO_LIBTOMCRYPT;MG_ENABLE_SSL;MG_SSL_IF=MG_SSL_IF_MBEDTLS;MG_SSL_MBED_DUMMY_RANDOM;USE_MBEDTLS;MG_ENABLE_GETADDRINFO;MG_ENABLE_SYNC_RESOLVER;MG_ENABLE_CALLBACK_USERDATA=1;WIN32;NDEBUG;_WINDOWS;_USRDLL;GG_DLL;GG_IMPLEMENTATION;TINYXML2_EXPORT;_HAVE_SQLITE_CONFIG_H;JSON_DLL_BUILD;HAVE_CONFIG_H;PNG_NO_CONFIG_H;COMPILED_FROM_DSP;ASTCENC_NEON=0;ASTCENC_SSE=41;ASTCENC_AVX=2;ASTCENC_POPCNT=1;ASTCENC_F16C=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <OpenMPSupport>true</OpenMPSupport>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>../$(Configuration)$(PlatformShortName)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <ModuleDefinitionFile>allimage.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>KTX_FEATURE_WRITE=1;KHRONOS_STATIC;LIBKTX;XML_STATIC;MG_ENABLE_MQTT_BROKER;SQLITE_HAS_CODEC=1;SQLCIPHER_CRYPTO_LIBTOMCRYPT;MG_ENABLE_SSL;MG_SSL_IF=MG_SSL_IF_MBEDTLS;MG_SSL_MBED_DUMMY_RANDOM;USE_MBEDTLS;MG_ENABLE_GETADDRINFO;MG_ENABLE_SYNC_RESOLVER;MG_ENABLE_CALLBACK_USERDATA=1;WIN32;NDEBUG;_WINDOWS;_USRDLL;GG_DLL;GG_IMPLEMENTATION;TINYXML2_EXPORT;_HAVE_SQLITE_CONFIG_H;JSON_DLL_BUILD;HAVE_CONFIG_H;PNG_NO_CONFIG_H;COMPILED_FROM_DSP;ASTCENC_NEON=0;ASTCENC_SSE=41;ASTCENC_AVX=2;ASTCENC_POPCNT=1;ASTCENC_F16C=1;BASISD_SUPPORT_FXT1=0;BASISU_NO_ITERATOR_DEBUG_LEVEL;KTX_FEATURE_KTX1;KTX_FEATURE_KTX2;KTX_FEATURE_WRITE;BASISD_SUPPORT_KTX2_ZSTD=1;BASISD_SUPPORT_KTX2=1;BASISU_SUPPORT_SSE=1;BASISU_SUPPORT_OPENCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <OpenMPSupport>true</OpenMPSupport>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <SDLCheck>false</SDLCheck>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalLibraryDirectories>../$(Configuration)$(PlatformShortName)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <ModuleDefinitionFile>allimage.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="image\crnlib\crnlib.cpp" />
+    <ClCompile Include="image\crnlib\crn_arealist.cpp" />
+    <ClCompile Include="image\crnlib\crn_assert.cpp" />
+    <ClCompile Include="image\crnlib\crn_checksum.cpp" />
+    <ClCompile Include="image\crnlib\crn_colorized_console.cpp" />
+    <ClCompile Include="image\crnlib\crn_command_line_params.cpp" />
+    <ClCompile Include="image\crnlib\crn_comp.cpp" />
+    <ClCompile Include="image\crnlib\crn_console.cpp" />
+    <ClCompile Include="image\crnlib\crn_core.cpp" />
+    <ClCompile Include="image\crnlib\crn_data_stream.cpp" />
+    <ClCompile Include="image\crnlib\crn_dds_comp.cpp" />
+    <ClCompile Include="image\crnlib\crn_decomp.cpp" />
+    <ClCompile Include="image\crnlib\crn_dxt.cpp" />
+    <ClCompile Include="image\crnlib\crn_dxt1.cpp" />
+    <ClCompile Include="image\crnlib\crn_dxt5a.cpp" />
+    <ClCompile Include="image\crnlib\crn_dxt_endpoint_refiner.cpp" />
+    <ClCompile Include="image\crnlib\crn_dxt_fast.cpp" />
+    <ClCompile Include="image\crnlib\crn_dxt_hc.cpp" />
+    <ClCompile Include="image\crnlib\crn_dxt_hc_common.cpp" />
+    <ClCompile Include="image\crnlib\crn_dxt_image.cpp" />
+    <ClCompile Include="image\crnlib\crn_dynamic_string.cpp" />
+    <ClCompile Include="image\crnlib\crn_etc.cpp" />
+    <ClCompile Include="image\crnlib\crn_file_utils.cpp" />
+    <ClCompile Include="image\crnlib\crn_find_files.cpp" />
+    <ClCompile Include="image\crnlib\crn_hash.cpp" />
+    <ClCompile Include="image\crnlib\crn_hash_map.cpp" />
+    <ClCompile Include="image\crnlib\crn_huffman_codes.cpp" />
+    <ClCompile Include="image\crnlib\crn_image_utils.cpp" />
+    <ClCompile Include="image\crnlib\crn_ktx_texture.cpp" />
+    <ClCompile Include="image\crnlib\crn_lzma_codec.cpp" />
+    <ClCompile Include="image\crnlib\crn_math.cpp" />
+    <ClCompile Include="image\crnlib\crn_mem.cpp" />
+    <ClCompile Include="image\crnlib\crn_mipmapped_texture.cpp" />
+    <ClCompile Include="image\crnlib\crn_pixel_format.cpp" />
+    <ClCompile Include="image\crnlib\crn_platform.cpp" />
+    <ClCompile Include="image\crnlib\crn_prefix_coding.cpp" />
+    <ClCompile Include="image\crnlib\crn_qdxt1.cpp" />
+    <ClCompile Include="image\crnlib\crn_qdxt5.cpp" />
+    <ClCompile Include="image\crnlib\crn_rand.cpp" />
+    <ClCompile Include="image\crnlib\crn_resampler.cpp" />
+    <ClCompile Include="image\crnlib\crn_resample_filters.cpp" />
+    <ClCompile Include="image\crnlib\crn_rg_etc1.cpp" />
+    <ClCompile Include="image\crnlib\crn_ryg_dxt.cpp" />
+    <ClCompile Include="image\crnlib\crn_sparse_bit_array.cpp" />
+    <ClCompile Include="image\crnlib\crn_stb_image.cpp" />
+    <ClCompile Include="image\crnlib\crn_strutils.cpp" />
+    <ClCompile Include="image\crnlib\crn_symbol_codec.cpp" />
+    <ClCompile Include="image\crnlib\crn_texture_comp.cpp" />
+    <ClCompile Include="image\crnlib\crn_texture_conversion.cpp" />
+    <ClCompile Include="image\crnlib\crn_texture_file_types.cpp" />
+    <ClCompile Include="image\crnlib\crn_threaded_resampler.cpp" />
+    <ClCompile Include="image\crnlib\crn_threading_pthreads.cpp" />
+    <ClCompile Include="image\crnlib\crn_threading_win32.cpp" />
+    <ClCompile Include="image\crnlib\crn_timer.cpp" />
+    <ClCompile Include="image\crnlib\crn_utils.cpp" />
+    <ClCompile Include="image\crnlib\crn_value.cpp" />
+    <ClCompile Include="image\crnlib\crn_vector.cpp" />
+    <ClCompile Include="image\crnlib\crn_zeng.cpp" />
+    <ClCompile Include="image\crnlib\lzma_7zBuf.cpp" />
+    <ClCompile Include="image\crnlib\lzma_7zBuf2.cpp" />
+    <ClCompile Include="image\crnlib\lzma_7zCrc.cpp" />
+    <ClCompile Include="image\crnlib\lzma_7zFile.cpp" />
+    <ClCompile Include="image\crnlib\lzma_7zStream.cpp" />
+    <ClCompile Include="image\crnlib\lzma_Alloc.cpp" />
+    <ClCompile Include="image\crnlib\lzma_Bcj2.cpp" />
+    <ClCompile Include="image\crnlib\lzma_Bra.cpp" />
+    <ClCompile Include="image\crnlib\lzma_Bra86.cpp" />
+    <ClCompile Include="image\crnlib\lzma_BraIA64.cpp" />
+    <ClCompile Include="image\crnlib\lzma_LzFind.cpp" />
+    <ClCompile Include="image\crnlib\lzma_LzFindMt.cpp" />
+    <ClCompile Include="image\crnlib\lzma_LzmaDec.cpp" />
+    <ClCompile Include="image\crnlib\lzma_LzmaEnc.cpp" />
+    <ClCompile Include="image\crnlib\lzma_LzmaLib.cpp" />
+    <ClCompile Include="image\crnlib\lzma_Threads.cpp" />
+    <ClCompile Include="image\jpeg\jpgd.cpp" />
+    <ClCompile Include="image\jpeg\jpge.cpp" />
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_averages_and_directions.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_block_sizes.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_color_quantize.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_color_unquantize.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_compress_symbolic.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_compute_variance.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_decompress_symbolic.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_diagnostic_trace.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_entry.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_find_best_partitioning.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_ideal_endpoints_and_weights.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_image.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_integer_sequence.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_mathlib.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_mathlib_softfloat.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_partition_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_percentile_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_pick_best_endpoint_format.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_platform_isa_detection.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_quantization.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_symbolic_physical.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_weight_align.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc-encoder\Source\astcenc_weight_quant_xfer_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="image\ktx\astc_encode.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_backend.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_basis_file.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_bc7enc.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_comp.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_enc.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_etc.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_frontend.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_gpu_texture.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_kernels_sse.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_opencl.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_pvrtc1_4.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_resampler.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_resample_filters.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_ssim.cpp" />
+    <ClCompile Include="image\ktx\basisu\encoder\basisu_uastc_enc.cpp" />
+    <ClCompile Include="image\ktx\basisu\transcoder\basisu_transcoder.cpp" />
+    <ClCompile Include="image\ktx\basis_encode.cpp" />
+    <ClCompile Include="image\ktx\basis_transcode.cpp" />
+    <ClCompile Include="image\ktx\checkheader.c" />
+    <ClCompile Include="image\ktx\dfdutils\colourspaces.c" />
+    <ClCompile Include="image\ktx\dfdutils\createdfd.c" />
+    <ClCompile Include="image\ktx\dfdutils\interpretdfd.c" />
+    <ClCompile Include="image\ktx\dfdutils\printdfd.c" />
+    <ClCompile Include="image\ktx\dfdutils\queries.c" />
+    <ClCompile Include="image\ktx\dfdutils\vk2dfd.c" />
+    <ClCompile Include="image\ktx\etcdec.cxx" />
+    <ClCompile Include="image\ktx\etcunpack.cxx" />
+    <ClCompile Include="image\ktx\filestream.c" />
+    <ClCompile Include="image\ktx\glloader.c" />
+    <ClCompile Include="image\ktx\gl_funcs.c" />
+    <ClCompile Include="image\ktx\hashlist.c" />
+    <ClCompile Include="image\ktx\info.c" />
+    <ClCompile Include="image\ktx\memstream.c" />
+    <ClCompile Include="image\ktx\strings.c" />
+    <ClCompile Include="image\ktx\swap.c" />
+    <ClCompile Include="image\ktx\texture.c" />
+    <ClCompile Include="image\ktx\texture1.c" />
+    <ClCompile Include="image\ktx\texture2.c" />
+    <ClCompile Include="image\ktx\vkformat_check.c" />
+    <ClCompile Include="image\ktx\vkformat_str.c" />
+    <ClCompile Include="image\ktx\vkloader.c" />
+    <ClCompile Include="image\ktx\vk_funcs.c" />
+    <ClCompile Include="image\ktx\writer1.c" />
+    <ClCompile Include="image\ktx\writer2.c" />
+    <ClCompile Include="image\ktx\zstd.c" />
+    <ClCompile Include="image\libjpeg\cdjpeg.c" />
+    <ClCompile Include="image\libjpeg\jaricom.c" />
+    <ClCompile Include="image\libjpeg\jcapimin.c" />
+    <ClCompile Include="image\libjpeg\jcapistd.c" />
+    <ClCompile Include="image\libjpeg\jcarith.c" />
+    <ClCompile Include="image\libjpeg\jccoefct.c" />
+    <ClCompile Include="image\libjpeg\jccolor.c" />
+    <ClCompile Include="image\libjpeg\jcdctmgr.c" />
+    <ClCompile Include="image\libjpeg\jchuff.c" />
+    <ClCompile Include="image\libjpeg\jcinit.c" />
+    <ClCompile Include="image\libjpeg\jcmainct.c" />
+    <ClCompile Include="image\libjpeg\jcmarker.c" />
+    <ClCompile Include="image\libjpeg\jcmaster.c" />
+    <ClCompile Include="image\libjpeg\jcomapi.c" />
+    <ClCompile Include="image\libjpeg\jcparam.c" />
+    <ClCompile Include="image\libjpeg\jcprepct.c" />
+    <ClCompile Include="image\libjpeg\jcsample.c" />
+    <ClCompile Include="image\libjpeg\jctrans.c" />
+    <ClCompile Include="image\libjpeg\jdapimin.c" />
+    <ClCompile Include="image\libjpeg\jdapistd.c" />
+    <ClCompile Include="image\libjpeg\jdarith.c" />
+    <ClCompile Include="image\libjpeg\jdatadst.c" />
+    <ClCompile Include="image\libjpeg\jdatasrc.c" />
+    <ClCompile Include="image\libjpeg\jdcoefct.c" />
+    <ClCompile Include="image\libjpeg\jdcolor.c" />
+    <ClCompile Include="image\libjpeg\jddctmgr.c" />
+    <ClCompile Include="image\libjpeg\jdhuff.c" />
+    <ClCompile Include="image\libjpeg\jdinput.c" />
+    <ClCompile Include="image\libjpeg\jdmainct.c" />
+    <ClCompile Include="image\libjpeg\jdmarker.c" />
+    <ClCompile Include="image\libjpeg\jdmaster.c" />
+    <ClCompile Include="image\libjpeg\jdmerge.c" />
+    <ClCompile Include="image\libjpeg\jdpostct.c" />
+    <ClCompile Include="image\libjpeg\jdsample.c" />
+    <ClCompile Include="image\libjpeg\jdtrans.c" />
+    <ClCompile Include="image\libjpeg\jerror.c" />
+    <ClCompile Include="image\libjpeg\jfdctflt.c" />
+    <ClCompile Include="image\libjpeg\jfdctfst.c" />
+    <ClCompile Include="image\libjpeg\jfdctint.c" />
+    <ClCompile Include="image\libjpeg\jidctflt.c" />
+    <ClCompile Include="image\libjpeg\jidctfst.c" />
+    <ClCompile Include="image\libjpeg\jidctint.c" />
+    <ClCompile Include="image\libjpeg\jmemansi.c" />
+    <ClCompile Include="image\libjpeg\jmemmgr.c" />
+    <ClCompile Include="image\libjpeg\jquant1.c" />
+    <ClCompile Include="image\libjpeg\jquant2.c" />
+    <ClCompile Include="image\libjpeg\jutils.c" />
+    <ClCompile Include="image\libjpeg\rdbmp.c" />
+    <ClCompile Include="image\libjpeg\rdcolmap.c" />
+    <ClCompile Include="image\libjpeg\rdgif.c" />
+    <ClCompile Include="image\libjpeg\rdppm.c" />
+    <ClCompile Include="image\libjpeg\rdrle.c" />
+    <ClCompile Include="image\libjpeg\rdswitch.c" />
+    <ClCompile Include="image\libjpeg\rdtarga.c" />
+    <ClCompile Include="image\libjpeg\transupp.c" />
+    <ClCompile Include="image\libjpeg\wrbmp.c" />
+    <ClCompile Include="image\libjpeg\wrgif.c" />
+    <ClCompile Include="image\libjpeg\wrppm.c" />
+    <ClCompile Include="image\libjpeg\wrrle.c" />
+    <ClCompile Include="image\libjpeg\wrtarga.c" />
+    <ClCompile Include="image\tif\port\dummy.c" />
+    <ClCompile Include="image\tif\port\getopt.c" />
+    <ClCompile Include="image\tif\tif_aux.c" />
+    <ClCompile Include="image\tif\tif_close.c" />
+    <ClCompile Include="image\tif\tif_codec.c" />
+    <ClCompile Include="image\tif\tif_color.c" />
+    <ClCompile Include="image\tif\tif_compress.c" />
+    <ClCompile Include="image\tif\tif_dir.c" />
+    <ClCompile Include="image\tif\tif_dirinfo.c" />
+    <ClCompile Include="image\tif\tif_dirread.c" />
+    <ClCompile Include="image\tif\tif_dirwrite.c" />
+    <ClCompile Include="image\tif\tif_dumpmode.c" />
+    <ClCompile Include="image\tif\tif_error.c" />
+    <ClCompile Include="image\tif\tif_extension.c" />
+    <ClCompile Include="image\tif\tif_fax3.c" />
+    <ClCompile Include="image\tif\tif_fax3sm.c" />
+    <ClCompile Include="image\tif\tif_flush.c" />
+    <ClCompile Include="image\tif\tif_getimage.c" />
+    <ClCompile Include="image\tif\tif_jbig.c" />
+    <ClCompile Include="image\tif\tif_jpeg.c" />
+    <ClCompile Include="image\tif\tif_jpeg_12.c" />
+    <ClCompile Include="image\tif\tif_lerc.c" />
+    <ClCompile Include="image\tif\tif_luv.c" />
+    <ClCompile Include="image\tif\tif_lzma.c" />
+    <ClCompile Include="image\tif\tif_lzw.c" />
+    <ClCompile Include="image\tif\tif_next.c" />
+    <ClCompile Include="image\tif\tif_ojpeg.c" />
+    <ClCompile Include="image\tif\tif_open.c" />
+    <ClCompile Include="image\tif\tif_packbits.c" />
+    <ClCompile Include="image\tif\tif_pixarlog.c" />
+    <ClCompile Include="image\tif\tif_predict.c" />
+    <ClCompile Include="image\tif\tif_print.c" />
+    <ClCompile Include="image\tif\tif_read.c" />
+    <ClCompile Include="image\tif\tif_strip.c" />
+    <ClCompile Include="image\tif\tif_swab.c" />
+    <ClCompile Include="image\tif\tif_thunder.c" />
+    <ClCompile Include="image\tif\tif_tile.c" />
+    <ClCompile Include="image\tif\tif_version.c" />
+    <ClCompile Include="image\tif\tif_warning.c" />
+    <ClCompile Include="image\tif\tif_webp.c" />
+    <ClCompile Include="image\tif\tif_win32.c" />
+    <ClCompile Include="image\tif\tif_write.c" />
+    <ClCompile Include="image\tif\tif_zip.c" />
+    <ClCompile Include="image\tif\tif_zstd.c" />
+    <ClCompile Include="image\webp\src\dec\alpha_dec.c" />
+    <ClCompile Include="image\webp\src\dec\buffer_dec.c" />
+    <ClCompile Include="image\webp\src\dec\frame_dec.c" />
+    <ClCompile Include="image\webp\src\dec\idec_dec.c" />
+    <ClCompile Include="image\webp\src\dec\io_dec.c" />
+    <ClCompile Include="image\webp\src\dec\quant_dec.c" />
+    <ClCompile Include="image\webp\src\dec\tree_dec.c" />
+    <ClCompile Include="image\webp\src\dec\vp8l_dec.c" />
+    <ClCompile Include="image\webp\src\dec\vp8_dec.c" />
+    <ClCompile Include="image\webp\src\dec\webp_dec.c" />
+    <ClCompile Include="image\webp\src\dsp\alpha_processing.c" />
+    <ClCompile Include="image\webp\src\dsp\alpha_processing_mips_dsp_r2.c" />
+    <ClCompile Include="image\webp\src\dsp\alpha_processing_neon.c" />
+    <ClCompile Include="image\webp\src\dsp\alpha_processing_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\alpha_processing_sse41.c" />
+    <ClCompile Include="image\webp\src\dsp\cost.c" />
+    <ClCompile Include="image\webp\src\dsp\cost_mips32.c" />
+    <ClCompile Include="image\webp\src\dsp\cost_mips_dsp_r2.c" />
+    <ClCompile Include="image\webp\src\dsp\cost_neon.c" />
+    <ClCompile Include="image\webp\src\dsp\cost_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\cpu.c" />
+    <ClCompile Include="image\webp\src\dsp\dec.c" />
+    <ClCompile Include="image\webp\src\dsp\dec_clip_tables.c" />
+    <ClCompile Include="image\webp\src\dsp\dec_mips32.c" />
+    <ClCompile Include="image\webp\src\dsp\dec_mips_dsp_r2.c" />
+    <ClCompile Include="image\webp\src\dsp\dec_msa.c" />
+    <ClCompile Include="image\webp\src\dsp\dec_neon.c" />
+    <ClCompile Include="image\webp\src\dsp\dec_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\dec_sse41.c" />
+    <ClCompile Include="image\webp\src\dsp\enc.c" />
+    <ClCompile Include="image\webp\src\dsp\enc_mips32.c" />
+    <ClCompile Include="image\webp\src\dsp\enc_mips_dsp_r2.c" />
+    <ClCompile Include="image\webp\src\dsp\enc_msa.c" />
+    <ClCompile Include="image\webp\src\dsp\enc_neon.c" />
+    <ClCompile Include="image\webp\src\dsp\enc_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\enc_sse41.c" />
+    <ClCompile Include="image\webp\src\dsp\filters.c" />
+    <ClCompile Include="image\webp\src\dsp\filters_mips_dsp_r2.c" />
+    <ClCompile Include="image\webp\src\dsp\filters_msa.c" />
+    <ClCompile Include="image\webp\src\dsp\filters_neon.c" />
+    <ClCompile Include="image\webp\src\dsp\filters_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_enc.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_enc_mips32.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_enc_mips_dsp_r2.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_enc_msa.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_enc_neon.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_enc_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_enc_sse41.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_mips_dsp_r2.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_msa.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_neon.c" />
+    <ClCompile Include="image\webp\src\dsp\lossless_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\rescaler.c" />
+    <ClCompile Include="image\webp\src\dsp\rescaler_mips32.c" />
+    <ClCompile Include="image\webp\src\dsp\rescaler_mips_dsp_r2.c" />
+    <ClCompile Include="image\webp\src\dsp\rescaler_msa.c" />
+    <ClCompile Include="image\webp\src\dsp\rescaler_neon.c" />
+    <ClCompile Include="image\webp\src\dsp\rescaler_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\ssim.c" />
+    <ClCompile Include="image\webp\src\dsp\ssim_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\upsampling.c" />
+    <ClCompile Include="image\webp\src\dsp\upsampling_mips_dsp_r2.c" />
+    <ClCompile Include="image\webp\src\dsp\upsampling_msa.c" />
+    <ClCompile Include="image\webp\src\dsp\upsampling_neon.c" />
+    <ClCompile Include="image\webp\src\dsp\upsampling_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\upsampling_sse41.c" />
+    <ClCompile Include="image\webp\src\dsp\yuv.c" />
+    <ClCompile Include="image\webp\src\dsp\yuv_mips32.c" />
+    <ClCompile Include="image\webp\src\dsp\yuv_mips_dsp_r2.c" />
+    <ClCompile Include="image\webp\src\dsp\yuv_neon.c" />
+    <ClCompile Include="image\webp\src\dsp\yuv_sse2.c" />
+    <ClCompile Include="image\webp\src\dsp\yuv_sse41.c" />
+    <ClCompile Include="image\webp\src\enc\alpha_enc.c" />
+    <ClCompile Include="image\webp\src\enc\analysis_enc.c" />
+    <ClCompile Include="image\webp\src\enc\backward_references_cost_enc.c" />
+    <ClCompile Include="image\webp\src\enc\backward_references_enc.c" />
+    <ClCompile Include="image\webp\src\enc\config_enc.c" />
+    <ClCompile Include="image\webp\src\enc\cost_enc.c" />
+    <ClCompile Include="image\webp\src\enc\filter_enc.c" />
+    <ClCompile Include="image\webp\src\enc\frame_enc.c" />
+    <ClCompile Include="image\webp\src\enc\histogram_enc.c" />
+    <ClCompile Include="image\webp\src\enc\iterator_enc.c" />
+    <ClCompile Include="image\webp\src\enc\near_lossless_enc.c" />
+    <ClCompile Include="image\webp\src\enc\picture_csp_enc.c" />
+    <ClCompile Include="image\webp\src\enc\picture_enc.c" />
+    <ClCompile Include="image\webp\src\enc\picture_psnr_enc.c" />
+    <ClCompile Include="image\webp\src\enc\picture_rescale_enc.c" />
+    <ClCompile Include="image\webp\src\enc\picture_tools_enc.c" />
+    <ClCompile Include="image\webp\src\enc\predictor_enc.c" />
+    <ClCompile Include="image\webp\src\enc\quant_enc.c" />
+    <ClCompile Include="image\webp\src\enc\syntax_enc.c" />
+    <ClCompile Include="image\webp\src\enc\token_enc.c" />
+    <ClCompile Include="image\webp\src\enc\tree_enc.c" />
+    <ClCompile Include="image\webp\src\enc\vp8l_enc.c" />
+    <ClCompile Include="image\webp\src\enc\webp_enc.c" />
+    <ClCompile Include="image\webp\src\utils\bit_reader_utils.c" />
+    <ClCompile Include="image\webp\src\utils\bit_writer_utils.c" />
+    <ClCompile Include="image\webp\src\utils\color_cache_utils.c" />
+    <ClCompile Include="image\webp\src\utils\filters_utils.c" />
+    <ClCompile Include="image\webp\src\utils\huffman_encode_utils.c" />
+    <ClCompile Include="image\webp\src\utils\huffman_utils.c" />
+    <ClCompile Include="image\webp\src\utils\quant_levels_dec_utils.c" />
+    <ClCompile Include="image\webp\src\utils\quant_levels_utils.c" />
+    <ClCompile Include="image\webp\src\utils\random_utils.c" />
+    <ClCompile Include="image\webp\src\utils\rescaler_utils.c" />
+    <ClCompile Include="image\webp\src\utils\thread_utils.c" />
+    <ClCompile Include="image\webp\src\utils\utils.c" />
+    <ClCompile Include="miniz\miniz.c" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="zlib\adler32.c" />
+    <ClCompile Include="zlib\compress.c" />
+    <ClCompile Include="zlib\crc32.c" />
+    <ClCompile Include="zlib\deflate.c" />
+    <ClCompile Include="zlib\gzclose.c" />
+    <ClCompile Include="zlib\gzlib.c" />
+    <ClCompile Include="zlib\gzread.c" />
+    <ClCompile Include="zlib\gzwrite.c" />
+    <ClCompile Include="zlib\infback.c" />
+    <ClCompile Include="zlib\inffast.c" />
+    <ClCompile Include="zlib\inflate.c" />
+    <ClCompile Include="zlib\inftrees.c" />
+    <ClCompile Include="zlib\trees.c" />
+    <ClCompile Include="zlib\uncompr.c" />
+    <ClCompile Include="zlib\zutil.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="image\imageencoder.h" />
+    <ClInclude Include="image\jpeg\jpgd.h" />
+    <ClInclude Include="image\jpeg\jpge.h" />
+    <ClInclude Include="image\libjpeg\cderror.h" />
+    <ClInclude Include="image\libjpeg\cdjpeg.h" />
+    <ClInclude Include="image\libjpeg\jconfig.h" />
+    <ClInclude Include="image\libjpeg\jdct.h" />
+    <ClInclude Include="image\libjpeg\jerror.h" />
+    <ClInclude Include="image\libjpeg\jinclude.h" />
+    <ClInclude Include="image\libjpeg\jmemsys.h" />
+    <ClInclude Include="image\libjpeg\jmorecfg.h" />
+    <ClInclude Include="image\libjpeg\jpegint.h" />
+    <ClInclude Include="image\libjpeg\jpeglib.h" />
+    <ClInclude Include="image\libjpeg\jversion.h" />
+    <ClInclude Include="image\libjpeg\transupp.h" />
+    <ClInclude Include="image\nanosvg.h" />
+    <ClInclude Include="image\nanosvgrast.h" />
+    <ClInclude Include="image\stb_image.h" />
+    <ClInclude Include="image\stb_image_resize.h" />
+    <ClInclude Include="image\webp\src\dec\alphai_dec.h" />
+    <ClInclude Include="image\webp\src\dec\common_dec.h" />
+    <ClInclude Include="image\webp\src\dec\vp8i_dec.h" />
+    <ClInclude Include="image\webp\src\dec\vp8li_dec.h" />
+    <ClInclude Include="image\webp\src\dec\vp8_dec.h" />
+    <ClInclude Include="image\webp\src\dec\webpi_dec.h" />
+    <ClInclude Include="image\webp\src\dsp\common_sse2.h" />
+    <ClInclude Include="image\webp\src\dsp\common_sse41.h" />
+    <ClInclude Include="image\webp\src\dsp\dsp.h" />
+    <ClInclude Include="image\webp\src\dsp\lossless.h" />
+    <ClInclude Include="image\webp\src\dsp\lossless_common.h" />
+    <ClInclude Include="image\webp\src\dsp\mips_macro.h" />
+    <ClInclude Include="image\webp\src\dsp\msa_macro.h" />
+    <ClInclude Include="image\webp\src\dsp\neon.h" />
+    <ClInclude Include="image\webp\src\dsp\quant.h" />
+    <ClInclude Include="image\webp\src\dsp\yuv.h" />
+    <ClInclude Include="image\webp\src\enc\backward_references_enc.h" />
+    <ClInclude Include="image\webp\src\enc\cost_enc.h" />
+    <ClInclude Include="image\webp\src\enc\histogram_enc.h" />
+    <ClInclude Include="image\webp\src\enc\vp8i_enc.h" />
+    <ClInclude Include="image\webp\src\enc\vp8li_enc.h" />
+    <ClInclude Include="image\webp\src\utils\bit_reader_inl_utils.h" />
+    <ClInclude Include="image\webp\src\utils\bit_reader_utils.h" />
+    <ClInclude Include="image\webp\src\utils\bit_writer_utils.h" />
+    <ClInclude Include="image\webp\src\utils\color_cache_utils.h" />
+    <ClInclude Include="image\webp\src\utils\endian_inl_utils.h" />
+    <ClInclude Include="image\webp\src\utils\filters_utils.h" />
+    <ClInclude Include="image\webp\src\utils\huffman_encode_utils.h" />
+    <ClInclude Include="image\webp\src\utils\huffman_utils.h" />
+    <ClInclude Include="image\webp\src\utils\quant_levels_dec_utils.h" />
+    <ClInclude Include="image\webp\src\utils\quant_levels_utils.h" />
+    <ClInclude Include="image\webp\src\utils\random_utils.h" />
+    <ClInclude Include="image\webp\src\utils\rescaler_utils.h" />
+    <ClInclude Include="image\webp\src\utils\utils.h" />
+    <ClInclude Include="image\webp\src\webp\config.h" />
+    <ClInclude Include="image\webp\src\webp\decode.h" />
+    <ClInclude Include="image\webp\src\webp\demux.h" />
+    <ClInclude Include="image\webp\src\webp\encode.h" />
+    <ClInclude Include="image\webp\src\webp\format_constants.h" />
+    <ClInclude Include="image\webp\src\webp\mux.h" />
+    <ClInclude Include="image\webp\src\webp\mux_types.h" />
+    <ClInclude Include="image\webp\src\webp\types.h" />
+    <ClInclude Include="zlib\crc32.h" />
+    <ClInclude Include="zlib\deflate.h" />
+    <ClInclude Include="zlib\gzguts.h" />
+    <ClInclude Include="zlib\inffast.h" />
+    <ClInclude Include="zlib\inffixed.h" />
+    <ClInclude Include="zlib\inflate.h" />
+    <ClInclude Include="zlib\inftrees.h" />
+    <ClInclude Include="zlib\trees.h" />
+    <ClInclude Include="zlib\zconf.h" />
+    <ClInclude Include="zlib\zlib.h" />
+    <ClInclude Include="zlib\zutil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="allimage.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="allimage.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
