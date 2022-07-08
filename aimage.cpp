@@ -1389,14 +1389,252 @@ AImage* AImage::LoadFrom(const unsigned char* pBlob, int nLen)
 	return nullptr;
 }
 
-AImageEncodeType AImage::EncodeType(const unsigned char* buff, int nLen)
+#pragma region imageIO 
+//影像IO
+class ImageIO
 {
-	return AImageEncodeType();
+public:
+	virtual ~ImageIO() {}
+	virtual unsigned int  Write(const unsigned char* pBlob, int nLen) = 0;
+	virtual unsigned int Read(unsigned char* pBlob, int nLen) = 0;
+	virtual bool Rewind() = 0;
+	virtual bool Eof() = 0;
+	AImageEncodeType ImageType();
+};
+//读写文件的io实现
+class ImageFile :public ImageIO
+{
+	std::fstream m_fStream;
+	std::fstream::pos_type m_nLen;
+public:
+	ImageFile(const char* file, bool bIn = false);
+	virtual unsigned int  Write(const unsigned char* pBlob, int nLen);
+	virtual unsigned int Read(unsigned char* pBlob, int nLen);
+	virtual bool Eof();
+	virtual bool Rewind();
+	bool IsOpen();
+};
+//读写内存中的数据的io实现
+class ImageBuffer :public ImageIO
+{
+	AByteBuffer* m_pBuffer;
+	unsigned int  m_Index;
+public:
+	ImageBuffer(AByteBuffer* pBuffer);
+	virtual unsigned int Write(const unsigned char* pBlob, int nLen);
+	virtual unsigned int Read(unsigned char* pBlob, int nLen);
+	virtual bool Eof();
+	virtual bool Rewind();
+};
+//内存中的只读io实现
+class ReadImageBuffer :public ImageIO
+{
+	const unsigned char* m_Buff;
+	unsigned int   m_nLen;
+	unsigned int  m_Index;
+public:
+	ReadImageBuffer(const unsigned char* buff, int nLen);
+	virtual unsigned int Write(const unsigned char* pBlob, int nLen);
+	virtual unsigned int Read(unsigned char* pBlob, int nLen);
+	virtual bool Eof();
+	virtual bool Rewind();
+};
+
+int read_stbi(void* user, char* data, int size)    // fill 'data' with 'size' bytes.  return number of bytes actually read
+{
+	ImageIO* img = (ImageIO*)user;
+	return img->Read((unsigned char*)data, size);
+}
+void skip_stbi(void* user, int n)                 // skip the next 'n' bytes, or 'unget' the last -n bytes if negative
+{
+	ImageIO* img = (ImageIO*)user;
+	unsigned char buff[1024];
+	while (n > 0)
+	{
+		int s = AMath::Min(1024, n);
+		img->Read(buff, s);
+		n -= s;
+	}
+}
+int eof_stbi(void* user)                        // returns nonzero if we are at end of file/data
+{
+	ImageIO* img = (ImageIO*)user;
+	return img->Eof();
 }
 
+AImageEncodeType ImageIO::ImageType()
+{
+	// Determine the true image type using link:
+	// http://en.wikipedia.org/wiki/List_of_file_signatures
+	char buffer[12] = { 0 };
+	if (Read((unsigned char*)buffer, 12) < 12) return eUnknownImage;
+
+	if (strncmp(buffer, "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8) == 0)
+		return ePNG;
+	if (buffer[0] == '\xff' && buffer[1] == '\xd8' && buffer[2] == '\xff')
+		return eJPG;
+	if (buffer[0] == '\x4D' && buffer[1] == '\x4D')
+		return eTIFF;
+	if (buffer[0] == '\x49' && buffer[1] == '\x49')
+		return eTIFF;
+
+	if (buffer[0] == 'B' && buffer[1] == 'M')
+		return eBMP;
+	if (buffer[0] == 'D' && buffer[1] == 'N' && buffer[2] == 'G')
+		return eDNG;
+	if (buffer[0] == 'G' && buffer[1] == 'I' && buffer[2] == 'F')
+		return eGIF;
+	if (strncmp(buffer, "DDS\x20", 4) == 0)
+		return eDDS;
+	if (strncmp(buffer, "Hx", 2) == 0)
+		return eCRN;
+
+	if (strncmp(buffer, "\xAB\x4B\x54\x58\x20\x31\x31\xBB\x0D\x0A\x1A\x0A", 12) == 0)
+		return eKTX;
+	if (buffer[8] == 'W' && buffer[9] == 'E' && buffer[10] == 'B' && buffer[11] == 'P')
+		return eWEBP;
+	if (strncmp(buffer, "\xAB\x4B\x54\x58\x20\x32\x30\xBB\x0D\x0A\x1A\x0A", 12) == 0)
+		return eKTX2;
+	std::string f = buffer;
+	stbi__context ctx;
+	memset(&ctx, 0, sizeof(stbi__context));
+	ctx.io_user_data = this;
+	stbi_io_callbacks cb;
+	cb.eof = eof_stbi;
+	cb.read = read_stbi;
+	cb.skip = skip_stbi;
+	Rewind();
+
+	stbi__start_callbacks(&ctx, &cb, this);
+	if (stbi__tga_test(&ctx))
+		return eTGA;
+
+	return eUnknownImage;
+}
+ImageFile::ImageFile(const char* file, bool bIn)
+{
+	if (bIn)
+	{
+		m_fStream.open(file, std::ios::in | std::ios::binary);
+		m_fStream.seekg(0, std::ios::end);
+		m_nLen = m_fStream.tellg();
+		m_fStream.seekg(0, std::ios::beg);
+	}
+	else
+		m_fStream.open(file, std::ios::out | std::ios::binary);
+
+}
+bool ImageFile::Rewind()
+{
+	if (m_fStream.eof())
+		m_fStream.clear(std::ios::eofbit);
+	m_fStream.seekg(0, std::ios::beg);
+	return true;
+}
+bool ImageFile::IsOpen()
+{
+	return m_fStream.is_open();
+}
+bool ImageFile::Eof()
+{
+	return m_fStream.eof();
+}
+unsigned int ImageFile::Read(unsigned char* pBlob, int nLen)
+{
+	std::fstream::pos_type pos = m_fStream.tellg();
+	if (NULL == pBlob)
+		m_fStream.seekg(nLen, std::ios::cur);
+	else
+		m_fStream.read((char*)pBlob, nLen);
+	if (m_fStream.eof())
+		return m_nLen - pos;
+	return m_fStream.tellg() - pos;
+}
+unsigned int ImageFile::Write(const unsigned char* pBlob, int nLen)
+{
+	m_fStream.write((const char*)pBlob, nLen);
+	return nLen;
+}
+ReadImageBuffer::ReadImageBuffer(const unsigned char* buff, int nLen)
+{
+	m_Buff = buff;
+	m_nLen = nLen;
+	m_Index = 0;
+}
+bool ReadImageBuffer::Eof()
+{
+	return m_Index >= m_nLen;
+}
+unsigned int ReadImageBuffer::Write(const unsigned char* pBlob, int nLen)
+{
+	return 0;
+}
+unsigned int ReadImageBuffer::Read(unsigned char* pBlob, int nLen)
+{
+	if (m_Index >= m_nLen)
+		return 0;
+	int nRead = nLen;
+	if (m_Index + nRead > m_nLen)
+		nRead = m_nLen - m_Index;
+	if (pBlob)
+		memcpy(pBlob, m_Buff + m_Index, nRead);
+	m_Index += nRead;
+	return nRead;
+}
+bool ReadImageBuffer::Rewind()
+{
+	m_Index = 0;
+	return true;
+}
+ImageBuffer::ImageBuffer(AByteBuffer* pBuffer)
+{
+	m_pBuffer = pBuffer;
+	m_Index = 0;
+}
+bool ImageBuffer::Eof()
+{
+	return m_Index >= m_pBuffer->BufferSize();
+}
+unsigned int  ImageBuffer::Write(const unsigned char* pBlob, int nLen)
+{
+	m_pBuffer->Append(pBlob, nLen);
+	return nLen;
+}
+unsigned int ImageBuffer::Read(unsigned char* pBlob, int nLen)
+{
+	if (m_Index >= m_pBuffer->BufferSize())
+		return 0;
+	int nRead = nLen;
+	if (m_Index + nRead > m_pBuffer->BufferSize())
+		nRead = m_pBuffer->BufferSize() - m_Index;
+	if (pBlob)
+		memcpy(pBlob, m_pBuffer->BufferHead() + m_Index, nRead);
+	m_Index += nRead;
+	return nRead;
+}
+bool ImageBuffer::Rewind()
+{
+	m_Index = 0;
+	return true;
+}
+#pragma endregion 
+
+AImageEncodeType AImage::EncodeType(const unsigned char* buff, int nLen)
+{
+	if (!buff || nLen <= 0)
+		return eUnknownImage;
+
+	//如果内容的头是PAM的头。
+	if (nLen > 3 && strncmp((const char*)buff, "P7\n", 3) == 0)
+		return ePAM;
+
+	ReadImageBuffer io(buff, nLen);
+	return (AImageEncodeType)io.ImageType();
+}
 AImageEncodeType AImage::EncodeType(const char* file)
 {
-	return AImageEncodeType();
+	ImageFile io(file, true);
+	return (AImageEncodeType)io.ImageType();
 }
 
 
