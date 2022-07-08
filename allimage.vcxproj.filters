@@ -1177,6 +1177,12 @@
     <ClCompile Include="miniz\miniz.c">
       <Filter>zlib</Filter>
     </ClCompile>
+    <ClCompile Include="aimage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="b64.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="zlib\zutil.h">
@@ -1216,9 +1222,6 @@
       <Filter>image</Filter>
     </ClInclude>
     <ClInclude Include="image\stb_image_resize.h">
-      <Filter>image</Filter>
-    </ClInclude>
-    <ClInclude Include="image\imageencoder.h">
       <Filter>image</Filter>
     </ClInclude>
     <ClInclude Include="image\nanosvg.h">
@@ -1394,6 +1397,9 @@
     </ClInclude>
     <ClInclude Include="image\webp\src\utils\quant_levels_dec_utils.h">
       <Filter>image\webp\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="aimage.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

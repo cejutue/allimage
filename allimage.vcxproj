@@ -96,7 +96,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source;;./image</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>KTX_FEATURE_WRITE=1;KHRONOS_STATIC;LIBKTX;XML_STATIC;MG_ENABLE_MQTT_BROKER;SQLITE_HAS_CODEC=1;SQLCIPHER_CRYPTO_LIBTOMCRYPT;MG_ENABLE_SSL;MG_SSL_IF=MG_SSL_IF_MBEDTLS;MG_SSL_MBED_DUMMY_RANDOM;USE_MBEDTLS;MG_ENABLE_GETADDRINFO;MG_ENABLE_SYNC_RESOLVER;MG_ENABLE_CALLBACK_USERDATA=1;WIN32;_DEBUG;_WINDOWS;_USRDLL;GG_DLL;GG_IMPLEMENTATION;TINYXML2_EXPORT;_HAVE_SQLITE_CONFIG_H;JSON_DLL_BUILD;HAVE_CONFIG_H;PNG_NO_CONFIG_H;COMPILED_FROM_DSP;PNG_USER_PRIVATEBUILD;ASTCENC_NEON=0;ASTCENC_SSE=41;ASTCENC_AVX=2;ASTCENC_POPCNT=1;ASTCENC_F16C=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -124,8 +124,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>KTX_FEATURE_WRITE=1;KHRONOS_STATIC;LIBKTX;XML_STATIC;MG_ENABLE_MQTT_BROKER;SQLITE_HAS_CODEC=1;SQLCIPHER_CRYPTO_LIBTOMCRYPT;MG_ENABLE_SSL;MG_SSL_IF=MG_SSL_IF_MBEDTLS;MG_SSL_MBED_DUMMY_RANDOM;USE_MBEDTLS;MG_ENABLE_GETADDRINFO;MG_ENABLE_SYNC_RESOLVER;MG_ENABLE_CALLBACK_USERDATA=1;WIN32;_DEBUG;_WINDOWS;_USRDLL;GEOSTAR_DLL;GG_IMPLEMENTATION;TINYXML2_EXPORT;_HAVE_SQLITE_CONFIG_H;JSON_DLL_BUILD;HAVE_CONFIG_H;PNG_NO_CONFIG_H;COMPILED_FROM_DSP;PNG_USER_PRIVATEBUILD;ASTCENC_NEON=0;ASTCENC_SSE=41;ASTCENC_AVX=2;ASTCENC_POPCNT=1;ASTCENC_F16C=1;BASISU_SUPPORT_OPENCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source;;./image</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>KTX_FEATURE_WRITE=1;KHRONOS_STATIC;LIBKTX;XML_STATIC;MG_ENABLE_MQTT_BROKER;SQLITE_HAS_CODEC=1;SQLCIPHER_CRYPTO_LIBTOMCRYPT;MG_ENABLE_SSL;MG_SSL_IF=MG_SSL_IF_MBEDTLS;MG_SSL_MBED_DUMMY_RANDOM;USE_MBEDTLS;MG_ENABLE_GETADDRINFO;MG_ENABLE_SYNC_RESOLVER;MG_ENABLE_CALLBACK_USERDATA=1;WIN32;_DEBUG;_WINDOWS;_USRDLL;GG_DLL;GG_IMPLEMENTATION;TINYXML2_EXPORT;_HAVE_SQLITE_CONFIG_H;JSON_DLL_BUILD;HAVE_CONFIG_H;PNG_NO_CONFIG_H;COMPILED_FROM_DSP;PNG_USER_PRIVATEBUILD;ASTCENC_NEON=0;ASTCENC_SSE=41;ASTCENC_AVX=2;ASTCENC_POPCNT=1;ASTCENC_F16C=1;BASISU_SUPPORT_OPENCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>
@@ -151,7 +151,7 @@
     <ClCompile>
       <Optimization>Full</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source;./image;./image</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>KTX_FEATURE_WRITE=1;KHRONOS_STATIC;LIBKTX;XML_STATIC;MG_ENABLE_MQTT_BROKER;SQLITE_HAS_CODEC=1;SQLCIPHER_CRYPTO_LIBTOMCRYPT;MG_ENABLE_SSL;MG_SSL_IF=MG_SSL_IF_MBEDTLS;MG_SSL_MBED_DUMMY_RANDOM;USE_MBEDTLS;MG_ENABLE_GETADDRINFO;MG_ENABLE_SYNC_RESOLVER;MG_ENABLE_CALLBACK_USERDATA=1;WIN32;NDEBUG;_WINDOWS;_USRDLL;GG_DLL;GG_IMPLEMENTATION;TINYXML2_EXPORT;_HAVE_SQLITE_CONFIG_H;JSON_DLL_BUILD;HAVE_CONFIG_H;PNG_NO_CONFIG_H;COMPILED_FROM_DSP;ASTCENC_NEON=0;ASTCENC_SSE=41;ASTCENC_AVX=2;ASTCENC_POPCNT=1;ASTCENC_F16C=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -180,7 +180,7 @@
     <ClCompile>
       <Optimization>Full</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./image/ktx;../include;.;./zlib;./image/inc;./image/tif/port;./image/tif/win32;./image/libjpeg;./html/gumbo;./image/webp;./image/ktx/other_include;./image/ktx/dfdutils;./image/ktx/basisu;./image/ktx/utils;./image/ktx/basisu/transcoder;./image/ktx/astc-encoder;./image/ktx/astc-encoder/Source;;./image</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>KTX_FEATURE_WRITE=1;KHRONOS_STATIC;LIBKTX;XML_STATIC;MG_ENABLE_MQTT_BROKER;SQLITE_HAS_CODEC=1;SQLCIPHER_CRYPTO_LIBTOMCRYPT;MG_ENABLE_SSL;MG_SSL_IF=MG_SSL_IF_MBEDTLS;MG_SSL_MBED_DUMMY_RANDOM;USE_MBEDTLS;MG_ENABLE_GETADDRINFO;MG_ENABLE_SYNC_RESOLVER;MG_ENABLE_CALLBACK_USERDATA=1;WIN32;NDEBUG;_WINDOWS;_USRDLL;GG_DLL;GG_IMPLEMENTATION;TINYXML2_EXPORT;_HAVE_SQLITE_CONFIG_H;JSON_DLL_BUILD;HAVE_CONFIG_H;PNG_NO_CONFIG_H;COMPILED_FROM_DSP;ASTCENC_NEON=0;ASTCENC_SSE=41;ASTCENC_AVX=2;ASTCENC_POPCNT=1;ASTCENC_F16C=1;BASISD_SUPPORT_FXT1=0;BASISU_NO_ITERATOR_DEBUG_LEVEL;KTX_FEATURE_KTX1;KTX_FEATURE_KTX2;KTX_FEATURE_WRITE;BASISD_SUPPORT_KTX2_ZSTD=1;BASISD_SUPPORT_KTX2=1;BASISU_SUPPORT_SSE=1;BASISU_SUPPORT_OPENCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -205,6 +205,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="aimage.cpp" />
+    <ClCompile Include="b64.cpp" />
     <ClCompile Include="image\crnlib\crnlib.cpp" />
     <ClCompile Include="image\crnlib\crn_arealist.cpp" />
     <ClCompile Include="image\crnlib\crn_assert.cpp" />
@@ -650,7 +652,7 @@
     <ClCompile Include="zlib\zutil.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="image\imageencoder.h" />
+    <ClInclude Include="aimage.h" />
     <ClInclude Include="image\jpeg\jpgd.h" />
     <ClInclude Include="image\jpeg\jpge.h" />
     <ClInclude Include="image\libjpeg\cderror.h" />

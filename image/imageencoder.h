@@ -1,10 +1,9 @@
 ﻿#pragma once
-#include <memorymanager.h>
-#include <image.h>
+
 #include <iostream>
 #include <fstream> 
 #include <vector>
- 
+
  
 #include "jpeg/jpge.h"
 #include "jpeg/jpgd.h"
@@ -196,7 +195,7 @@ class WEBPImageEncoder : public ImageEncoder
 {	
 	WebPPicture m_Picture;
 	WebPConfig m_Config;
-	UTILITY_NAME::GsRGBAType m_inputType;
+	UTILITY_NAME::RGBAColorType m_inputType;
 public:
 	WEBPImageEncoder(ImageIO* io);
 
@@ -205,7 +204,7 @@ public:
 
 	void Quality(int nQuality);
 	void Speed(int speed);
-	void RGBAType(UTILITY_NAME::GsRGBAType inputType);
+	void RGBAType(UTILITY_NAME::RGBAColorType inputType);
 
 	// 通过 ImageEncoder 继承
 	virtual bool Begin(int w, int h, int nStride, int bpp) override;
