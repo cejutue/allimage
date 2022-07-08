@@ -7,7 +7,7 @@
 #ifdef _WIN32  
 #ifdef _DEBUG
 #pragma comment(lib,"allimaged.lib")
-#elif
+#else
 #pragma comment(lib,"allimage.lib")
 #endif // _DEBUG
 #endif // WIN32
@@ -24,7 +24,8 @@ int main()
     AImage* imgcrn = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\kernel_ktx.crn");
     AImage* imgktx2 = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\0318_img0.ktx2");
     AImage* imgwebp = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\baby_tux.webp"); 
-
+    AImage* imgtiff = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\quad-lzw-compat.tiff");
+   
     imgpng->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\z001a.png", AImageEncodeType::ePNG);
     imgtga->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\z001a.tga", AImageEncodeType::eTGA);
     imgjpg->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\worlda.jpg", AImageEncodeType::eJPG);
@@ -34,5 +35,6 @@ int main()
     imgcrn->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\kernel_ktxa.crn", AImageEncodeType::eCRN);
     imgktx2->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\0318_img0a.ktx2", AImageEncodeType::eKTX2);
     imgwebp->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\baby_tuxa.webp", AImageEncodeType::eWEBP);
+    imgtiff->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\quad-lzw-compata.tiff", AImageEncodeType::eTIFF);
 }
 

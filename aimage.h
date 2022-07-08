@@ -939,9 +939,9 @@ enum AImageEncodeType
 struct AImageHeaderInfo
 {
 	/// \brief 图像的宽
-	unsigned int Width;
+	int Width;
 	/// \brief 图像的高
-	unsigned int Height;
+	int Height;
 	/// \brief 像素深度, Bits Per Pixel
 	int Bpp;
 
@@ -1086,5 +1086,10 @@ public:
 	static bool ParseImageHeaderInfo(const unsigned char* blob, unsigned int len, AImageHeaderInfo* info);
 
 	static int RGBAIndex(AColorBandType t, char c);
+
+	bool IsValid()const  { return m_LoadOK; };
+	protected:
+		bool m_LoadOK = false;
+		bool Init(const unsigned char* blob, int nLen);
 };
 

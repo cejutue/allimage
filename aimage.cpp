@@ -7,6 +7,11 @@
 #include "stb_image_write.h"
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb_image_resize.h"
+
+#include "ktx.h"
+#include "vkformat_enum.h"
+#include "vk_format.h"
+
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +24,32 @@
 #include "aimage.h"
 #include "b64.h"
 #include <map>
+
+#ifdef ANDROID
+
+#else
+//// Public crnlib header.
+#include "crnlib.h"
+#define CRND_HEADER_FILE_ONLY
+//CRN transcoder library.
+#include "crn_decomp.h"
+//.DDS file format definitions.
+#include "dds_defs.h"
+#include "crnlib/crn_core.h"
+#include "crnlib/crn_console.h"
+
+#include "crnlib/crn_colorized_console.h"
+
+#include "crnlib/crn_find_files.h"
+#include "crnlib/crn_file_utils.h"
+#include "crnlib/crn_command_line_params.h"
+
+#include "crnlib/crn_dxt.h"
+#include "crnlib/crn_cfile_stream.h"
+#include "crnlib/crn_texture_conversion.h"
+#include "crnlib/crn_texture_comp.h"
+#include "crnlib/crn_buffer_stream.h"
+#endif // ANDROID
 using namespace std;
 #ifndef PI
 #define PI 3.1415926535897932
@@ -1152,243 +1183,6 @@ ARectF& ARectF::Union(const ARectF& rect)
 	Bottom = AMath::Max(Bottom, rect.Bottom);
 	return *this;
 }
-
-
-
-
-AImage::AImage()
-{
-	m_Info.RGBAType  = AColorBandType::eRGBA32;
-}
-AImage::AImage(unsigned int nWidth, unsigned int nHeight, AImage* img, const ARect& extent)
-{
-}
-AImage::AImage(unsigned int nWidth, unsigned int nHeight, const unsigned char* raw, int nBpp)
-{
-}
-AImage::AImage(unsigned int nWidth, unsigned int nHeight, AColorBandType eColorType)
-{
-}
-AImage::AImage(const char* strFile)
-{
-}
-AImage::AImage(const unsigned char* blob, int nLen)
-{
-}
-AImage::~AImage()
-{
-}
-
-/// \brief 拷贝
-bool AImage::CopyFrom(AImage* pImage)
-{
-	return false;
-}
-
-/// \brief 获取图片颜色格式
-
-AColorBandType AImage::RGBAType()
-{
-	//目前统一存储的RGBA，所以固定返回RGBA，以后有需要再扩展
-	//20200826，当前已经处于一个历史的变革期，需要扩展
-	return m_Info.RGBAType;
-}
-
-unsigned int AImage::Width()
-{
-	return 0;
-}
-
-unsigned int AImage::Height()
-{
-	return 0;
-}
-
-const unsigned char* AImage::Bit()
-{
-	return nullptr;
-}
-
-
-int AImage::RGBAIndex(AColorBandType t, char c)
-{
-	static string str = "rgbaRGBA";
-	if (str.find(c) == string::npos)
-	{
-		return -1;
-	}
-
-	static const char r = 'r', g = 'g', b = 'b', a = 'a';
-	static const char R = 'R', G = 'G', B = 'B', A = 'A';
-	static std::map<const char, int> m = { {r, -1}, {g, -1}, {b, -1}, {a, -1} };
-	switch (t)
-	{
-	case AColorBandType::eBGRA32:
-		m[b] = m[B] = 0, m[g] = m[G] = 1, m[r] = m[R] = 2, m[a] = m[A] = 3;
-		break;
-	case AColorBandType::eABGR32:
-		m[a] = m[A] = 0, m[b] = m[B] = 1, m[g] = m[G] = 2, m[r] = m[R] = 3;
-		break;
-	case AColorBandType::eRGBA32:
-		m[r] = m[R] = 0, m[g] = m[G] = 1, m[b] = m[B] = 2, m[a] = m[A] = 3;
-		break;
-	case AColorBandType::eARGB32:
-		m[a] = m[A] = 0, m[r] = m[R] = 1, m[g] = m[G] = 2, m[b] = m[B] = 3;
-		break;
-	case AColorBandType::eRGB24:
-		m[r] = m[R] = 0, m[g] = m[G] = 1, m[b] = m[B] = 2, m[a] = m[A] = -1;
-		break;
-	case AColorBandType::eBGR24:
-		m[b] = m[B] = 0, m[g] = m[G] = 1, m[r] = m[R] = 2, m[a] = m[A] = -1;
-		break;
-	default:
-		break;
-	}
-	auto iter = m.find(c);
-	if (iter != m.end())
-		return iter->second;
-	return -1;
-}
-bool CopyImage(unsigned char* pSrc, AColorBandType srcType, unsigned char* pDsc, AColorBandType dscType, int width, int height)
-{
-	if (dscType == srcType)
-	{
-		memcpy(pDsc, pSrc, AImage::Stride(width, dscType) * height);
-		return true;
-	}
-
-	int srcStride = AImage::Stride(width, srcType);
-	int dscStride = AImage::Stride(width, dscType);
-	int srcBPP = AImage::BytePerPixcel(srcType);
-	int dscBPP = AImage::BytePerPixcel(dscType);
-
-	int srcRIndex = AImage::RGBAIndex(srcType, 'r');
-	int srcGIndex = AImage::RGBAIndex(srcType, 'g');
-	int srcBIndex = AImage::RGBAIndex(srcType, 'b');
-	int srcAIndex = AImage::RGBAIndex(srcType, 'a');
-	int dscRIndex = AImage::RGBAIndex(dscType, 'r');
-	int dscGIndex = AImage::RGBAIndex(dscType, 'g');
-	int dscBIndex = AImage::RGBAIndex(dscType, 'b');
-	int dscAIndex = AImage::RGBAIndex(dscType, 'a');
-
-	for (int h = 0; h < height; h++)
-	{
-		for (int w = 0; w < width; w++)
-		{
-			pDsc[w * dscBPP + dscRIndex] = pSrc[w * srcBPP + srcRIndex];
-			pDsc[w * dscBPP + dscGIndex] = pSrc[w * srcBPP + srcGIndex];
-			pDsc[w * dscBPP + dscBIndex] = pSrc[w * srcBPP + srcBIndex];
-			if (dscAIndex >= 0)
-			{
-				if (srcAIndex >= 0)
-					pDsc[w * dscBPP + dscAIndex] = pSrc[w * srcBPP + srcAIndex];
-				else
-					pDsc[w * dscBPP + dscAIndex] = 255;
-			}
-		}
-		pSrc += srcStride;
-		pDsc += dscStride;
-	}
-	return true;
-}
-
-/// \brief 拷贝外部数据到自身
-bool AImage::FillImageData(const unsigned char* buff, int nLen, AColorBandType eType)
-{
-	return CopyImage(const_cast<unsigned char*>(buff), eType, const_cast<unsigned char*>(Bit()), m_Info.RGBAType, Width(), Height());
-}
-
-
-
-
-/// \brief 拷贝自身的数据到外部影像
-int AImage::CopyImageData(unsigned char* pBuff, int nLen, AColorBandType eType)
-{
-	if (CopyImage(const_cast<unsigned char*>(Bit()), m_Info.RGBAType, pBuff, eType, Width(), Height()))
-		return nLen;
-	return 0;
-}
-
-
-/// \brief 图像一行的字节长度
-unsigned int AImage::Stride()
-{
-	return Width() * BytePerPixcel(m_Info.RGBAType);
-}
-
-unsigned int AImage::Stride(unsigned int w, AColorBandType t)
-{
-	return w * BytePerPixcel(t);
-}
-
-unsigned int AImage::BytePerPixcel(AColorBandType t)
-{
-	int size = 4;
-	switch (t)
-	{
-	case AColorBandType::eBGRA32:
-	case AColorBandType::eABGR32:
-	case AColorBandType::eRGBA32:
-	case AColorBandType::eARGB32:
-		break;
-	case AColorBandType::eRGB24:
-	case AColorBandType::eBGR24:
-		size = 3;
-		break;
-	default:
-		break;
-	}
-	return size;
-}
-
-bool AImage::ParseImageHeaderInfo(const char* file, AImageHeaderInfo* info)
-{
-	if (!info || !file)
-		return false;
-	// to do
-	return false;
-}
-
-bool AImage::ParseImageHeaderInfo(const unsigned char* blob, unsigned int len, AImageHeaderInfo* info)
-{
-	if (!blob || !info)
-		return false;
-
-	// to do
-	return false;
-}
-
-/// \brief 获取图像的字节数组，并非所有图像都能够成功
-const unsigned char* AImage::Row(int r)
-{
-	if (r < 0 || r >= Height())
-		return 0;
-	const unsigned char* pHead = Bit();
-	if (NULL == pHead)
-		return 0;
-	return pHead + Stride() * r;
-}
-
-bool AImage::Save(const char* strFile, AImageEncodeType type)
-{
-	return false;
-}
-
-bool AImage::Save(const unsigned char* pBlob, int nLen, AImageEncodeType type)
-{
-	return false;
-}
-
-AImage* AImage::LoadFrom(const char* strFile)
-{
-	return nullptr;
-}
-
-AImage* AImage::LoadFrom(const unsigned char* pBlob, int nLen)
-{
-	return nullptr;
-}
-
 #pragma region imageIO 
 //影像IO
 class ImageIO
@@ -1397,6 +1191,7 @@ public:
 	virtual ~ImageIO() {}
 	virtual unsigned int  Write(const unsigned char* pBlob, int nLen) = 0;
 	virtual unsigned int Read(unsigned char* pBlob, int nLen) = 0;
+
 	virtual bool Rewind() = 0;
 	virtual bool Eof() = 0;
 	AImageEncodeType ImageType();
@@ -1438,6 +1233,10 @@ public:
 	virtual unsigned int Read(unsigned char* pBlob, int nLen);
 	virtual bool Eof();
 	virtual bool Rewind();
+	virtual unsigned int Seek(int nLen,int nwhere);
+	virtual unsigned int Offset() {
+		return m_Index;
+	}
 };
 
 int read_stbi(void* user, char* data, int size)    // fill 'data' with 'size' bytes.  return number of bytes actually read
@@ -1586,6 +1385,26 @@ bool ReadImageBuffer::Rewind()
 	m_Index = 0;
 	return true;
 }
+unsigned int ReadImageBuffer::Seek(int nOffset, int nWhence)
+{
+	if (nOffset < 0 || nOffset > m_nLen)
+		return -1;
+	if (nWhence == SEEK_SET)
+	{
+		m_Index = nOffset;
+	}
+	else if (nWhence == SEEK_CUR)
+	{
+		m_Index = m_Index + nOffset;
+	}
+	else
+	{
+		m_Index = m_nLen + nOffset;
+	}
+	//beof = false;
+	return 0;
+}
+
 ImageBuffer::ImageBuffer(AByteBuffer* pBuffer)
 {
 	m_pBuffer = pBuffer;
@@ -1618,6 +1437,573 @@ bool ImageBuffer::Rewind()
 	return true;
 }
 #pragma endregion 
+
+
+
+AImage::AImage()
+{
+	m_Info.RGBAType  = AColorBandType::eRGBA32;
+}
+AImage::AImage(unsigned int nWidth, unsigned int nHeight, AImage* img, const ARect& extent)
+{
+}
+AImage::AImage(unsigned int nWidth, unsigned int nHeight, const unsigned char* raw, int nBpp)
+{
+}
+AImage::AImage(unsigned int nWidth, unsigned int nHeight, AColorBandType eColorType)
+{
+}
+AImage::AImage(const char* strFile)
+{
+}
+
+
+#include "tif/tiffio.h"
+static tmsize_t
+tiffReadProc(thandle_t fd, void* buf, tmsize_t size)
+{
+	ReadImageBuffer* io = (ReadImageBuffer*)fd;
+	return io->Read((unsigned char*)buf, size);
+}
+static tmsize_t
+tiffWriteProc(thandle_t fd, void* buf, tmsize_t size)
+{
+	ReadImageBuffer* io = (ReadImageBuffer*)fd;
+	return io->Write((unsigned char*)buf, size);
+}
+static uint64
+tiffSeekProc(thandle_t fd, uint64 off, int whence)
+{
+	ReadImageBuffer* io = (ReadImageBuffer*)fd;
+	io->Seek(off, whence);
+	return io->Offset();
+}
+static int
+tiffCloseProc(thandle_t fd)
+{
+	return 0;
+}
+static uint64
+tiffSizeProc(thandle_t fd)
+{
+	return 0;
+}
+static int
+tiffMapProc(thandle_t fd, void** pbase, toff_t* psize)
+{
+	return 0;
+
+}
+static void
+tiffUnmapProc(thandle_t fd, void* base, toff_t size)
+{
+
+}
+struct CloseTiff
+{
+	void operator() (TIFF* tif)const
+	{
+		TIFFClose(tif);
+	}
+
+};
+
+crnlib::texture_file_types::format ToTextureFileType(AImageEncodeType eType)
+{
+	if (eType == eDDS)
+		return crnlib::texture_file_types::cFormatDDS;
+	if (eType == eKTX)
+		return crnlib::texture_file_types::cFormatKTX;
+
+	if (eType == eCRN)
+		return crnlib::texture_file_types::cFormatCRN;
+
+	return crnlib::texture_file_types::cFormatInvalid;
+}
+
+/// \brief 纹理压缩格式
+enum ATexturePixelFormat
+{
+	eDXT1,
+	eDXT2,
+	eDXT3,
+	eDXT4,
+	eDXT5,
+	e3DC,
+	eDXN,
+	eDXT5A,
+	eDXT5_CCxY,
+	eDXT5_xGxR,
+	eDXT5_xGBR,
+	eDXT5_AGBR,
+	eDXT1A,
+	eETC1,
+	eR8G8B8,
+	eL8,
+	eA8,
+	eA8L8,
+	eA8R8G8B8,
+};
+ATexturePixelFormat ToPixelFormat(crnlib::pixel_format f)
+{
+	switch (f)
+	{
+	case crnlib::PIXEL_FMT_DXT1:
+		return eDXT1;
+	case crnlib::PIXEL_FMT_DXT2:
+		return eDXT2;
+	case crnlib::PIXEL_FMT_DXT3:
+		return eDXT3;
+	case crnlib::PIXEL_FMT_DXT4:
+		return eDXT4;
+	case crnlib::PIXEL_FMT_DXT5:
+		return eDXT5;
+	case crnlib::PIXEL_FMT_3DC:
+		return e3DC;
+	case crnlib::PIXEL_FMT_DXN:
+		return eDXN;
+	case crnlib::PIXEL_FMT_DXT5A:
+		return eDXT5A;
+	case crnlib::PIXEL_FMT_DXT5_CCxY:
+		return eDXT5_CCxY;
+	case crnlib::PIXEL_FMT_DXT5_xGxR:
+		return eDXT5_xGxR;
+	case crnlib::PIXEL_FMT_DXT5_xGBR:
+		return eDXT5_xGBR;
+	case crnlib::PIXEL_FMT_DXT5_AGBR:
+		return eDXT5_AGBR;
+	case crnlib::PIXEL_FMT_DXT1A:
+		return eDXT1A;
+	case crnlib::PIXEL_FMT_ETC1:
+		return eETC1;
+
+	case crnlib::PIXEL_FMT_R8G8B8:
+		return eR8G8B8;
+
+	case crnlib::PIXEL_FMT_L8:
+		return eL8;
+
+	case crnlib::PIXEL_FMT_A8:
+		return eA8;
+
+	case crnlib::PIXEL_FMT_A8L8:
+		return eA8L8;
+
+	case crnlib::PIXEL_FMT_A8R8G8B8:
+		return eA8R8G8B8;
+		break;
+	}
+	return eDXT5;
+}
+#include "src/webp/decode.h"
+AImage::AImage(const unsigned char* blob, int nLen)
+{
+	m_LoadOK = Init(blob, nLen);
+}
+bool AImage::Init(const unsigned char* blob, int nLen)
+{
+	if (blob == NULL || nLen <= 0) return false;
+
+	ReadImageBuffer io(blob, nLen);
+	AImageEncodeType eType = io.ImageType();
+	m_Info.EncodeType = eType;
+	m_Info.RGBAType = AColorBandType::eRGBA32;
+	io.Rewind();
+	if (eType == eUnknownImage) return false;
+	if (eType == ePNG|| eType == eJPG || eType == eBMP || eType == eGIF ||eType == eTGA)
+	{
+		//unsigned char* data = stbi_load_from_memory(blob,  nLen, 
+		//	&m_Info.Width, &m_Info.Height, &m_Info.Bpp, 0);	
+
+		stbi__context ctx;
+		memset(&ctx, 0, sizeof(stbi__context));
+		ctx.io_user_data = &io;
+		stbi_io_callbacks cb;
+		cb.eof = eof_stbi;
+		cb.read = read_stbi;
+		cb.skip = skip_stbi;
+		io.Rewind();
+
+		int com;
+		stbi_uc* data = stbi_load_from_callbacks(&cb, &io, &m_Info.Width, &m_Info.Height, &com, 4);
+		if (!data)
+			return false;
+		m_Info.Bpp = com * 8;
+		if(com == 4)
+			m_Info.RGBAType = AColorBandType::eRGBA32;
+		else
+			m_Info.RGBAType = AColorBandType::eRGB24;
+		m_Buffer.Append(data, m_Info.Width*m_Info.Height * com);
+		STBI_FREE(data);
+	}
+	else if (eType >= eKTX && eType <= eCRN)
+	{
+		if (m_Info.EncodeType == eKTX2)
+		{
+			ktxTexture* pKtx2;
+			ktx_error_code_e result;
+			if (blob) {
+				result = ktxTexture2_CreateFromMemory(blob, nLen, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, (ktxTexture2**)&pKtx2);
+			}
+			
+			if (KTX_SUCCESS != result)
+			{
+				return false;
+			}
+			m_Info.Width = pKtx2->baseWidth;
+			m_Info.Height = pKtx2->baseHeight;
+			m_Buffer.Allocate(m_Info.Width * m_Info.Height * 4);
+			memcpy((void*)m_Buffer.BufferHead(), pKtx2->pData, pKtx2->dataSize);
+
+			return true;
+		}
+		//不是GIF肯定不干活
+		if (m_Info.EncodeType < eKTX || m_Info.EncodeType >eCRN)
+			return false;
+
+		crnlib::mipmapped_texture tex;
+		//if (!m_File.empty())
+		//{
+		//	if (!tex.read_from_file(m_File.c_str(), ToTextureFileType(m_eType)))
+		//		return false;
+		//}
+		//else
+		{
+			crnlib::buffer_stream stream(blob,  nLen);
+			crnlib::data_stream_serializer ser(stream);
+			if (!tex.read_from_stream(ser, ToTextureFileType(m_Info.EncodeType)))
+				return false;
+		}
+
+		if (tex.get_num_faces() <= 0)
+			return false;
+
+		m_Info.Width = tex.get_width();
+		m_Info.Height = tex.get_height();
+		//m_ePixelType = ToPixelFormat(tex.get_format());
+		//m_nMipMap = tex.get_num_levels() - 1;
+		if (m_Info.Width <= 0 || m_Info.Height <= 0)
+			return false;
+
+		//如果不是32位颜色则转换之。
+		if (tex.get_format() != crnlib::PIXEL_FMT_A8R8G8B8)
+		{
+			crnlib::dxt_image::pack_params pack_params;
+			pack_params.m_compressor = cCRNDXTCompressorCRN;
+			if (!tex.convert(crnlib::PIXEL_FMT_A8R8G8B8, pack_params))
+				return false;
+			m_Info.RGBAType = AColorBandType::eARGB32;
+		}
+		//取一帧
+		crnlib::mip_ptr_vec& vec = tex.get_face(0);
+		for (int i = 0; i < vec.size() && i < 1; i++)
+		{
+			crnlib::mip_level* level = vec.at(i);
+			this->m_Buffer.Allocate(level->get_total_pixels() * 4);
+			memcpy((void*)m_Buffer.BufferHead(), level->get_image()->get_pixels(), level->get_total_pixels() * 4);
+		}
+		return true;
+	}
+	else if (eType == eTIFF)
+	{
+		TIFF* tif = TIFFClientOpen("tiff", "r", &io, tiffReadProc, tiffWriteProc, tiffSeekProc, tiffCloseProc, tiffSizeProc,
+			tiffMapProc, tiffUnmapProc);
+		if (!tif)
+			return false;
+		m_Info.Bpp = 32;
+		std::unique_ptr<TIFF, CloseTiff> ptrTiff(tif);
+		//get image info
+		m_Info.Width = 0;
+		m_Info.Height= 0;
+		TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &m_Info.Width);
+		TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &m_Info.Height);
+		int samplesperpixel = 0;
+		int bitspersample = 0;
+		int rowsperstrip = 0;
+		int photometric = 0;
+		int orientation = 0;
+		TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &samplesperpixel);
+		TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bitspersample);
+		TIFFGetField(tif, TIFFTAG_ROWSPERSTRIP, &rowsperstrip);
+		TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &photometric);
+		TIFFGetField(tif, TIFFTAG_ORIENTATION, &orientation);
+		if (m_Info.Width <= 0 || m_Info.Height <= 0)
+			return false;
+		int metric = PHOTOMETRIC_RGB;
+
+		m_Buffer.Allocate(m_Info.Width * m_Info.Height * 4);
+		//unsigned int* color = m_Buffer.PtrT<unsigned int>();
+		unsigned int* head = m_Buffer.PtrT<unsigned int>();
+
+		int n = TIFFReadRGBAImageOriented(tif, m_Info.Width , m_Info.Height, head,	ORIENTATION_TOPLEFT, 1);
+		if (n == 0)
+			return false;
+	}
+	else if (eType == eWEBP)
+	{
+		WebPDecoderConfig config;
+		WebPDecBuffer* output_buffer = &config.output;
+		WebPBitstreamFeatures* bitstream = &config.input;
+		if (!WebPInitDecoderConfig(&config)) {
+			printf ( "WEBP Library version mismatch!\n");
+			return false;
+		}
+		output_buffer->colorspace = MODE_RGBA;
+		config.options.no_fancy_upsampling = 1;
+		config.options.bypass_filtering = 1;
+		config.options.use_threads = 1;
+		config.output.colorspace = MODE_RGBA;
+		VP8StatusCode status = VP8_STATUS_OK;
+		size_t data_size = 0;
+		status = WebPDecode(blob, nLen, &config);
+		if (VP8_STATUS_OK != status)
+			return false;
+		
+			m_Buffer.Allocate(0);
+			m_Buffer.Append(output_buffer->u.RGBA.rgba, output_buffer->u.RGBA.size);
+			WebPFreeDecBuffer(output_buffer);
+			m_Info.Width = output_buffer->width;
+			m_Info.Height = output_buffer->height;
+			if (m_Info.Width != 0 && m_Info.Height != 0)
+				m_Info.Bpp = output_buffer->u.RGBA.size / m_Info.Width / m_Info.Height * 8;
+			else
+				m_Info.Bpp = 0;
+	}
+	return true;
+}
+AImage::~AImage()
+{
+}
+
+/// \brief 拷贝
+bool AImage::CopyFrom(AImage* pImage)
+{
+	return false;
+}
+
+/// \brief 获取图片颜色格式
+
+AColorBandType AImage::RGBAType()
+{
+	//目前统一存储的RGBA，所以固定返回RGBA，以后有需要再扩展
+	//20200826，当前已经处于一个历史的变革期，需要扩展
+	return m_Info.RGBAType;
+}
+
+unsigned int AImage::Width()
+{
+	return 0;
+}
+
+unsigned int AImage::Height()
+{
+	return 0;
+}
+
+const unsigned char* AImage::Bit()
+{
+	return nullptr;
+}
+
+
+int AImage::RGBAIndex(AColorBandType t, char c)
+{
+	static string str = "rgbaRGBA";
+	if (str.find(c) == string::npos)
+	{
+		return -1;
+	}
+
+	static const char r = 'r', g = 'g', b = 'b', a = 'a';
+	static const char R = 'R', G = 'G', B = 'B', A = 'A';
+	static std::map<const char, int> m = { {r, -1}, {g, -1}, {b, -1}, {a, -1} };
+	switch (t)
+	{
+	case AColorBandType::eBGRA32:
+		m[b] = m[B] = 0, m[g] = m[G] = 1, m[r] = m[R] = 2, m[a] = m[A] = 3;
+		break;
+	case AColorBandType::eABGR32:
+		m[a] = m[A] = 0, m[b] = m[B] = 1, m[g] = m[G] = 2, m[r] = m[R] = 3;
+		break;
+	case AColorBandType::eRGBA32:
+		m[r] = m[R] = 0, m[g] = m[G] = 1, m[b] = m[B] = 2, m[a] = m[A] = 3;
+		break;
+	case AColorBandType::eARGB32:
+		m[a] = m[A] = 0, m[r] = m[R] = 1, m[g] = m[G] = 2, m[b] = m[B] = 3;
+		break;
+	case AColorBandType::eRGB24:
+		m[r] = m[R] = 0, m[g] = m[G] = 1, m[b] = m[B] = 2, m[a] = m[A] = -1;
+		break;
+	case AColorBandType::eBGR24:
+		m[b] = m[B] = 0, m[g] = m[G] = 1, m[r] = m[R] = 2, m[a] = m[A] = -1;
+		break;
+	default:
+		break;
+	}
+	auto iter = m.find(c);
+	if (iter != m.end())
+		return iter->second;
+	return -1;
+}
+
+bool CopyImage(unsigned char* pSrc, AColorBandType srcType, unsigned char* pDsc, AColorBandType dscType, int width, int height)
+{
+	if (dscType == srcType)
+	{
+		memcpy(pDsc, pSrc, AImage::Stride(width, dscType) * height);
+		return true;
+	}
+
+	int srcStride = AImage::Stride(width, srcType);
+	int dscStride = AImage::Stride(width, dscType);
+	int srcBPP = AImage::BytePerPixcel(srcType);
+	int dscBPP = AImage::BytePerPixcel(dscType);
+
+	int srcRIndex = AImage::RGBAIndex(srcType, 'r');
+	int srcGIndex = AImage::RGBAIndex(srcType, 'g');
+	int srcBIndex = AImage::RGBAIndex(srcType, 'b');
+	int srcAIndex = AImage::RGBAIndex(srcType, 'a');
+	int dscRIndex = AImage::RGBAIndex(dscType, 'r');
+	int dscGIndex = AImage::RGBAIndex(dscType, 'g');
+	int dscBIndex = AImage::RGBAIndex(dscType, 'b');
+	int dscAIndex = AImage::RGBAIndex(dscType, 'a');
+
+	for (int h = 0; h < height; h++)
+	{
+		for (int w = 0; w < width; w++)
+		{
+			pDsc[w * dscBPP + dscRIndex] = pSrc[w * srcBPP + srcRIndex];
+			pDsc[w * dscBPP + dscGIndex] = pSrc[w * srcBPP + srcGIndex];
+			pDsc[w * dscBPP + dscBIndex] = pSrc[w * srcBPP + srcBIndex];
+			if (dscAIndex >= 0)
+			{
+				if (srcAIndex >= 0)
+					pDsc[w * dscBPP + dscAIndex] = pSrc[w * srcBPP + srcAIndex];
+				else
+					pDsc[w * dscBPP + dscAIndex] = 255;
+			}
+		}
+		pSrc += srcStride;
+		pDsc += dscStride;
+	}
+	return true;
+}
+
+/// \brief 拷贝外部数据到自身
+bool AImage::FillImageData(const unsigned char* buff, int nLen, AColorBandType eType)
+{
+	return CopyImage(const_cast<unsigned char*>(buff), eType, const_cast<unsigned char*>(Bit()), m_Info.RGBAType, Width(), Height());
+}
+
+
+
+
+/// \brief 拷贝自身的数据到外部影像
+int AImage::CopyImageData(unsigned char* pBuff, int nLen, AColorBandType eType)
+{
+	if (CopyImage(const_cast<unsigned char*>(Bit()), m_Info.RGBAType, pBuff, eType, Width(), Height()))
+		return nLen;
+	return 0;
+}
+
+
+/// \brief 图像一行的字节长度
+unsigned int AImage::Stride()
+{
+	return Width() * BytePerPixcel(m_Info.RGBAType);
+}
+
+unsigned int AImage::Stride(unsigned int w, AColorBandType t)
+{
+	return w * BytePerPixcel(t);
+}
+
+unsigned int AImage::BytePerPixcel(AColorBandType t)
+{
+	int size = 4;
+	switch (t)
+	{
+	case AColorBandType::eBGRA32:
+	case AColorBandType::eABGR32:
+	case AColorBandType::eRGBA32:
+	case AColorBandType::eARGB32:
+		break;
+	case AColorBandType::eRGB24:
+	case AColorBandType::eBGR24:
+		size = 3;
+		break;
+	default:
+		break;
+	}
+	return size;
+}
+
+bool AImage::ParseImageHeaderInfo(const char* file, AImageHeaderInfo* info)
+{
+	if (!info || !file)
+		return false;
+	// to do
+	return false;
+}
+
+bool AImage::ParseImageHeaderInfo(const unsigned char* blob, unsigned int len, AImageHeaderInfo* info)
+{
+	if (!blob || !info)
+		return false;
+
+	// to do
+	return false;
+}
+
+/// \brief 获取图像的字节数组，并非所有图像都能够成功
+const unsigned char* AImage::Row(int r)
+{
+	if (r < 0 || r >= Height())
+		return 0;
+	const unsigned char* pHead = Bit();
+	if (NULL == pHead)
+		return 0;
+	return pHead + Stride() * r;
+}
+
+bool AImage::Save(const char* strFile, AImageEncodeType type)
+{
+	return false;
+}
+
+bool AImage::Save(const unsigned char* pBlob, int nLen, AImageEncodeType type)
+{
+	return false;
+}
+
+AImage* AImage::LoadFrom(const char* strFile)
+{
+	AGrowByteBuffer buff;
+	FILE* pF = fopen(strFile,"rb");
+	if (!pF)
+		return  0;
+#ifdef _WIN32
+	struct _stat64 s;
+	_stat64(strFile, &s);
+#else
+	struct stat s;
+	stat(strFile, &s);
+#endif
+	buff.Allocate(s.st_size);
+	size_t n = fread((void*)buff.BufferHead(), 1, s.st_size, pF);
+	fclose(pF);
+	auto img =  new AImage(buff.BufferHead(), s.st_size);
+	if(img && img->m_LoadOK)
+		return img;
+	return nullptr;
+}
+
+AImage* AImage::LoadFrom(const unsigned char* pBlob, int nLen)
+{
+	return new AImage(pBlob, nLen);
+}
+
+
 
 AImageEncodeType AImage::EncodeType(const unsigned char* buff, int nLen)
 {
