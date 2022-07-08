@@ -12,7 +12,11 @@ ktx2
 webp
 tiff)
 
-you can add  all file in  your project.
+use:
+1:  you can add  all file in  your project, this need some define and include setting.
+2:  build with allimage.vcxproj, less vs2015;
+3:  linux use camke build , less cmake 3.12, gcc4.8.5;
+
 
 ## build 
 
