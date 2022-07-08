@@ -1,5 +1,16 @@
 # allimage
-some image encode/decode code(KTX2,WEBP,tif,jpg,png,SVG  and any more)
+some image encode/decode code
+support lists:
+(png 
+tga 
+jpg 
+gif 
+ktx 
+dds 
+crn 
+ktx2
+webp
+tiff)
 
 you can add  all file in  your project.
 
