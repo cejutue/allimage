@@ -1,5 +1,6 @@
 # allimage
 some image encode/decode code
+20220709: Log: can read all
 support lists:
 (png 
 tga 
