@@ -51,6 +51,10 @@
 #include "crnlib/crn_buffer_stream.h"
 #endif // ANDROID
 using namespace std;
+
+#include "src/webp/decode.h"
+#include "webp/src/webp/encode.h"
+
 #ifndef PI
 #define PI 3.1415926535897932
 #endif
@@ -1491,7 +1495,7 @@ AImage::AImage(unsigned int nWidth, unsigned int nHeight, const unsigned char* r
 AImage::AImage(unsigned int nWidth, unsigned int nHeight, AColorBandType eColorType)
 {
 	m_Info.RGBAType = eColorType;
-	m_Info.Bpp= AImage::BytePerPixcel(eColorType) * 8;
+	m_Info.Bpp = AImage::BytePerPixcel(eColorType) * 8;
 	m_Buffer.Allocate(nWidth * nHeight * (m_Info.Bpp / 8));
 	if (m_Buffer.BufferSize() != nWidth * nHeight * (m_Info.Bpp / 8))
 		return;
@@ -1501,10 +1505,10 @@ AImage::AImage(unsigned int nWidth, unsigned int nHeight, AColorBandType eColorT
 }
 AImage::AImage(const char* strFile)
 {
-	
+
 	FILE* pF = fopen(strFile, "rb");
 	if (!pF)
-		return  ;
+		return;
 #ifdef _WIN32
 	struct _stat64 s;
 	_stat64(strFile, &s);
@@ -1656,7 +1660,7 @@ ATexturePixelFormat ToPixelFormat(crnlib::pixel_format f)
 	}
 	return eDXT5;
 }
-#include "src/webp/decode.h"
+
 AImage::AImage(const unsigned char* blob, int nLen)
 {
 	m_LoadOK = Init(blob, nLen);
@@ -2025,14 +2029,311 @@ const unsigned char* AImage::Row(int r)
 	return pHead + Stride() * r;
 }
 
+
+
+void my_stbi_write_func(void* context, void* data, int size)
+{
+	ImageIO* img = (ImageIO*)context;
+	img->Write((const unsigned char*)data, size);
+}
+
+#pragma region webp write
+template<AColorBandType T, int R, int G, int B, int A>
+struct ToARGB
+{
+	int ToARGBProcess(int len, unsigned int* pixelhead)
+	{
+		if (len < 1)
+			return 0;
+
+		for (int i = 0; i < len; i++, pixelhead++)
+		{
+			unsigned char* pixel = (unsigned char*)pixelhead;
+			unsigned char a = 255;
+			if (A >= 0)
+				a = (char)pixel[A];
+
+			unsigned char r = (char)pixel[R];
+			unsigned char g = (char)pixel[G];
+			unsigned char b = (char)pixel[B];
+			if (A >= 0)
+				pixel[3] = a;
+			pixel[0] = b;
+			pixel[1] = g;
+			pixel[2] = r;
+		}
+		return -1;
+	}
+};
+typedef ToARGB<AColorBandType::eRGBA32, 0, 1, 2, 3>	  FromRGBA32;
+typedef ToARGB<AColorBandType::eABGR32, 3, 2, 1, 0>   FromABGR32;
+typedef ToARGB<AColorBandType::eBGRA32, 2, 1, 0, 3>   FromBGRA32;
+typedef ToARGB<AColorBandType::eARGB32, 1, 2, 3, 0>   FromARGB32;
+
+typedef ToARGB<AColorBandType::eRGB24, 0, 1, 2, -1>   FromRGB24;
+typedef ToARGB<AColorBandType::eBGR24, 2, 1, 0, -1>   FromBGR24;
+bool WriteRow(AColorBandType inputType, unsigned char* webpargb,const unsigned char* pRow, int nLen, int nRowCount)
+{
+	//这里要将所有颜色转为argb
+	switch (inputType)
+	{
+	case AColorBandType::eBGRA32:
+	{
+		FromBGRA32 convert;
+		convert.ToARGBProcess(nLen / 4, (unsigned int*)pRow);
+	}
+	break;
+	case AColorBandType::eABGR32:
+	{
+		FromABGR32 convert;
+		convert.ToARGBProcess(nLen / 4, (unsigned int*)pRow);
+	}
+	break;
+	case AColorBandType::eRGBA32:
+	{
+		FromRGBA32 convert;
+		convert.ToARGBProcess(nLen / 4, (unsigned int*)pRow);
+	}
+	break;
+	case AColorBandType::eARGB32:
+	{
+		FromARGB32 convert;
+		convert.ToARGBProcess(nLen / 4, (unsigned int*)pRow);
+	}
+	break;
+	case AColorBandType::eRGB24:
+	{
+		FromRGB24 convert;
+		convert.ToARGBProcess(nLen / 4, (unsigned int*)pRow);
+	}
+	case AColorBandType::eBGR24:
+	{
+		FromBGR24 convert;
+		convert.ToARGBProcess(nLen, (unsigned int*)pRow);
+	}
+	default:
+		break;
+	}
+
+	memcpy((unsigned char*)(webpargb) + nRowCount * nLen, pRow, nLen);
+	return true;
+}
+int CustomWebPWriterFunction(const uint8_t* data, size_t data_size, const WebPPicture* picture)
+{
+	ImageIO* io = (ImageIO*)picture->custom_ptr;
+	return data_size ? ((int)io->Write(data, data_size)) : 1;
+}
+bool SaveWEBP(ImageIO* IO, AImageHeaderInfo& info, AGrowByteBuffer* buff)
+{
+	WebPPicture m_Picture;
+	WebPConfig m_Config;
+	if (!WebPPictureInit(&m_Picture) || !WebPConfigInit(&m_Config))
+		return false;
+
+	m_Config.method = 6;
+	m_Config.quality = 75;
+	m_Config.autofilter = 1;
+	m_Config.alpha_quality = 0;
+	m_Config.emulate_jpeg_size = 1;
+	//m_Config.thread_level = 1;
+
+	//begin
+	if (!WebPValidateConfig(&m_Config)) {
+		AColorBandType InputType = info.RGBAType;
+		m_Picture.use_argb = (((int)InputType <= 3) ? 1 : 0);
+		m_Picture.width = info.Width;
+		m_Picture.height = info.Height;
+		m_Picture.argb_stride = info.Width;
+		m_Picture.writer = &CustomWebPWriterFunction;
+		m_Picture.custom_ptr = (void*)IO;
+		if (!WebPPictureAlloc(&m_Picture)) {
+
+			return false;
+		}
+		int Stride = info.Width * info.Bpp / 8;
+		auto pHead = buff->BufferHead() + 0 * info.Width * info.Bpp / 8;
+		for (int i = 0; i < info.Height; i++)
+			pHead = buff->BufferHead() + i * info.Width * info.Bpp / 8;
+		WriteRow(info.RGBAType, (unsigned char*)m_Picture.argb, pHead, Stride, Stride);
+
+
+		//end write
+		WebPAuxStats stats;
+		m_Picture.stats = &stats;
+		if (!WebPEncode(&m_Config, &m_Picture))
+		{
+			return false;
+		}
+
+		WebPPictureFree(&m_Picture);
+	}
+	return true;
+}
+#pragma endregion 
 bool AImage::Save(const char* strFile, AImageEncodeType type)
 {
+	//stbi__start_write_callbacks
+
+	if (!strFile)
+		return false;
+
+	int w = m_Info.Width;
+	int h = m_Info.Height;
+	int bpp = m_Info.Bpp / 8;
+	int size = w * h * bpp;
+
+	switch (type)
+	{
+	case eUnknownImage:
+		break;
+	case ePNG:
+	{
+		return  stbi_write_png(strFile, w, h, bpp, m_Buffer.BufferHead(), size);
+	}break;
+	case eJPG:
+	{
+		return  stbi_write_jpg(strFile, w, h, bpp, m_Buffer.BufferHead(), 75);
+	}break;
+	case eBMP:
+	{
+		return  stbi_write_bmp(strFile, w, h, bpp, m_Buffer.BufferHead());
+	}
+	break;
+	case eDNG:
+		break;
+	case eGIF:
+		break;
+	case eTGA:
+	{
+		return  stbi_write_tga(strFile, w, h, bpp, m_Buffer.BufferHead());
+	}
+	break;
+	case eKTX:
+	case eDDS:
+	case eCRN:
+	case eKTX2:
+	{
+		/*	GsSize size = { (int)Width(), (int)Height() };
+			GsTextureEncoderPtr ptrEncoder = new GsTextureEncoder(strFile, size, type);
+
+			const GsAny& any = params.Value(GsImageEncoderParameterType::eQuality);
+			if (any.Type == eI4 && any.AsInt() >= 0 && any.AsInt() <= 255)
+			{
+				ptrEncoder->QualityLevel() = any.AsInt();
+			}
+			const GsAny& any2 = params.Value(GsImageEncoderParameterType::eCompression);
+			if (any2.Type == eI4)
+			{
+				GsTexturePixelFormat type = (GsTexturePixelFormat)(any2.AsInt());
+				ptrEncoder->PixelFormat() = type;
+			}
+			bool b = ptrEncoder->BeginEncode();
+			if (!b) return false;
+			b = ptrEncoder->Write(this);
+			if (!b) return false;
+			b = ptrEncoder->FinishEncode();
+			if (!b) return false;
+			return b;*/
+	}
+	case eTIFF:
+		break;
+	case ePAM:
+		break;
+	case eWEBP:
+	{
+		ImageFile file(strFile);
+		if (!file.IsOpen())
+			return false;
+
+		return SaveWEBP(&file, m_Info, &m_Buffer);
+	}
+	default:
+		break;
+	}
+
+	return false;
 	return false;
 }
 
-bool AImage::Save(const unsigned char* pBlob, int nLen, AImageEncodeType type)
+bool AImage::Save(AGrowByteBuffer* buff, AImageEncodeType type)
 {
+	if (!buff|| m_Buffer.BufferSize() <= 0 || m_Info.Width <= 0 || m_Info.Height <= 0 )
+		return false;
+
+	int w = m_Info.Width;
+	int h = m_Info.Height;
+	int bpp = m_Info.Bpp / 8;
+	int size = w * h * bpp;
+
+	ImageBuffer buffer(buff);
+	switch (type)
+	{
+	case eUnknownImage:
+		break;
+	case ePNG:
+	{
+		return stbi_write_png_to_func(my_stbi_write_func, &buffer, w, h, bpp, m_Buffer.BufferHead(), size);
+	}break;
+	case eJPG:
+	{
+		return stbi_write_jpg_to_func(my_stbi_write_func, &buffer, w, h, bpp, m_Buffer.BufferHead(), 75);
+	}break;
+	case eBMP:
+	{
+		return stbi_write_bmp_to_func(my_stbi_write_func, &buffer, w, h, bpp, m_Buffer.BufferHead());
+	}break;
+	case eDNG:
+		break;
+	case eGIF:
+		break;
+	case eTGA:
+	{
+		return  stbi_write_tga_to_func(my_stbi_write_func, &buffer, w, h, bpp, m_Buffer.BufferHead());
+	}break;
+	case eKTX:
+	case eDDS:
+	case eCRN:
+	case eKTX2:
+	{
+		/*	GsSize size = { (int)Width(), (int)Height() };
+			GsTextureEncoderPtr ptrEncoder = new GsTextureEncoder(strFile, size, type);
+
+			const GsAny& any = params.Value(GsImageEncoderParameterType::eQuality);
+			if (any.Type == eI4 && any.AsInt() >= 0 && any.AsInt() <= 255)
+			{
+				ptrEncoder->QualityLevel() = any.AsInt();
+			}
+			const GsAny& any2 = params.Value(GsImageEncoderParameterType::eCompression);
+			if (any2.Type == eI4)
+			{
+				GsTexturePixelFormat type = (GsTexturePixelFormat)(any2.AsInt());
+				ptrEncoder->PixelFormat() = type;
+			}
+			bool b = ptrEncoder->BeginEncode();
+			if (!b) return false;
+			b = ptrEncoder->Write(this);
+			if (!b) return false;
+			b = ptrEncoder->FinishEncode();
+			if (!b) return false;
+			return b;*/
+	}
+	case eTIFF:
+		break;
+	case ePAM:
+		break;
+	case eWEBP:
+	{
+		ImageBuffer buff(buff);
+		return SaveWEBP(&buff, m_Info, &m_Buffer);
+	}
+	default:
+		break;
+	}
+
 	return false;
+
+
+
 }
 
 AImage* AImage::LoadFrom(const char* strFile)

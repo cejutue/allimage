@@ -1048,7 +1048,7 @@ public:
 	/// \param type 图像编码类型
 	/// \param params  图像编码参数
 	/// \return true 成功 false失败
-	virtual bool Save(const unsigned char* pBlob, int nLen, AImageEncodeType type);
+	virtual bool Save(AGrowByteBuffer* buff, AImageEncodeType type);
 
 	/// \brief 从文件载入生成图像
 	/// \param strFile 
@@ -1091,5 +1091,6 @@ public:
 	protected:
 		bool m_LoadOK = false;
 		bool Init(const unsigned char* blob, int nLen);
+	
 };
 
