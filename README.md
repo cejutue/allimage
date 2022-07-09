@@ -1,17 +1,22 @@
 # allimage
 some image encode/decode code
+
 20220709: Log: can read all
-support lists:
-(png 
-tga 
-jpg 
-gif 
-ktx 
-dds 
-crn 
-ktx2
-webp
-tiff)
+
+
+	support lists:
+	(
+	png   r/w
+	tga   r/w
+	jpg   r/w
+	gif   r/
+	ktx   r/w
+	dds   r/w
+	crn   r/w
+	ktx2   r/w
+	webp   r/w
+	tiff   r
+	)  
 
 use:
 1:  you can add  all file in  your project, this need some define and include setting.
