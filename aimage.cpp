@@ -2170,6 +2170,360 @@ bool SaveWEBP(ImageIO* IO, AImageHeaderInfo& info, AGrowByteBuffer* buff)
 	return true;
 }
 #pragma endregion 
+
+#pragma region ktx2 write
+class BufferStreamer :public crnlib::buffer_stream
+{
+	AByteBuffer* m_buff;
+public:
+	BufferStreamer(AByteBuffer* buff)
+	{
+		m_buff = buff;
+	}
+	virtual crnlib::uint write(const void* pBuf, crnlib::uint len)
+	{
+		m_buff->Append((const unsigned char*)pBuf, len);
+		return len;
+	}
+};
+struct Ktxwrite
+{
+	std::string m_file;
+	AByteBuffer* m_Buffer = NULL;
+	VkFormat ToKtx2VkFormat(AColorBandType type) {
+		if (AColorBandType::eABGR32 == type)
+			return VkFormat::VK_FORMAT_A8B8G8R8_UNORM_PACK32;
+		else if (AColorBandType::eARGB32 == type)
+			return VkFormat::VK_FORMAT_A2R10G10B10_UNORM_PACK32;
+		else if (AColorBandType::eBGR24 == type)
+			return VkFormat::VK_FORMAT_B8G8R8_UNORM;
+		else if (AColorBandType::eBGRA32 == type)
+			return VkFormat::VK_FORMAT_B8G8R8A8_UNORM;
+		else if (AColorBandType::eRGB24 == type)
+			return  VkFormat::VK_FORMAT_R8G8B8_UNORM;
+		else
+			return  VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
+	}
+
+public:
+	Ktxwrite(const ASize& s, const char* file)
+	{
+		m_Size = s;
+		m_file = file;
+		//kts2 压缩得相关参数有几十个, 暂时先不开放,先用模式,
+		m_CompressType = 0;
+		m_DeflateUseZstd = false;
+	}
+	Ktxwrite(const ASize& s, AByteBuffer* buff)
+	{
+		m_Size = s;
+		m_Buffer = buff;
+		//kts2 压缩得相关参数有几十个, 暂时先不开放,先用模式,
+		m_CompressType = 0;
+		m_DeflateUseZstd = false;
+	}
+	ASize m_Size;
+	AImageEncodeType m_eType;
+	ATexturePixelFormat m_PixelFormat;
+	int					m_QualityLevel;
+	int					m_MipmapCount;
+	int					m_CompressType = 0; //Basis Etc1s Or Uastc or Astc
+	bool				m_DeflateUseZstd = false;
+
+
+
+	bool WriteImage(AImage* img)
+	{
+		if (m_eType == eKTX2)
+			return ToKTX2(img);
+		crnlib::mipmapped_texture src_tex;
+		crnlib::mip_level* mip = crnlib::crnlib_new<crnlib::mip_level>();
+		crnlib::image_u8* imgData = crnlib::crnlib_new<crnlib::image_u8>();
+		crnlib::color_quad_u8* bits = (crnlib::color_quad_u8*)img->Bit();
+		imgData->alias(bits, img->Width(), img->Height(), img->Width());
+		mip->assign(imgData);
+		src_tex.assign(mip);
+
+		if (m_MipmapCount > 0)
+		{
+			crnlib::mipmapped_texture::generate_mipmap_params  params;
+			params.m_max_mips = m_MipmapCount + 1;
+			params.m_min_mip_size = 2;
+
+			src_tex.generate_mipmaps(params, true);
+		}
+		if (m_eType == eCRN)
+			return ToCRN(src_tex);
+		if (m_eType == eKTX)
+			return ToKTX(src_tex);
+		if (m_eType == eDDS)
+			return ToCRN(src_tex);
+		return false;
+	}
+	crn_dxt_quality QualityLevelToDXTQuality(int nLevel)
+	{
+		if (nLevel <= 51)
+			return cCRNDXTQualitySuperFast;
+		if (nLevel <= 51 * 2)
+			return cCRNDXTQualityFast;
+		if (nLevel <= 51 * 3)
+			return cCRNDXTQualityNormal;
+		if (nLevel <= 51 * 4)
+			return cCRNDXTQualityBetter;
+
+		return cCRNDXTQualityUber;
+	}
+	bool ToKTX(crnlib::mipmapped_texture& src_tex)
+	{
+		crnlib::pixel_format format = ToPixelFormat(m_PixelFormat);
+		if (src_tex.get_format() != format)
+		{
+			crnlib::dxt_image::pack_params pack_params;
+			pack_params.m_compressor = cCRNDXTCompressorCRN;
+			pack_params.m_quality = QualityLevelToDXTQuality(m_QualityLevel);
+			src_tex.convert(format, pack_params);
+		}
+		if (m_Buffer)
+		{
+			m_Buffer->Allocate(m_Size.Width * m_Size.Height * 4);
+			m_Buffer->Allocate(0);
+			BufferStreamer buff(m_Buffer);
+			crnlib::data_stream_serializer ser(&buff);
+
+			return src_tex.write_ktx(ser);
+		}
+		else
+		{
+			crnlib::cfile_stream write_stream;
+			if (!write_stream.open(m_file.c_str(), crnlib::cDataStreamWritable | crnlib::cDataStreamSeekable))
+				return false;
+			crnlib::data_stream_serializer serializer(write_stream);
+			return src_tex.write_ktx(serializer);
+		}
+		return true;
+	}
+
+
+	bool ToKTX2(AImage* img)
+	{
+		ktxTexture* ktx2;
+		//ktx_error_code_e err;
+		ktx_error_code_e result;
+		ktxTextureCreateInfo createInfo;
+		//createInfo.glInternalformat = 32856;//GL_RGB8;   // Ignored if creating a ktxTexture2.
+		createInfo.vkFormat = ToKtx2VkFormat(img->RGBAType());//VK_FORMAT_R8G8B8_UNORM;   // Ignored if creating a ktxTexture1.
+		createInfo.baseWidth = img->Width();
+		createInfo.baseHeight = img->Height();
+		createInfo.baseDepth = 1;
+		createInfo.numDimensions = 2;
+		createInfo.numLevels = 1;//log2(max_dim) + 1;
+		createInfo.numLayers = 1;
+		createInfo.numFaces = 1;
+		createInfo.isArray = KTX_FALSE;
+		createInfo.generateMipmaps = KTX_FALSE;
+		result = ktxTexture2_Create(&createInfo, ktxTextureCreateStorageEnum::KTX_TEXTURE_CREATE_ALLOC_STORAGE, (ktxTexture2**)&ktx2);
+		result = ktxTexture_SetImageFromMemory(ktx2, 0, 0, 0, (ktx_uint8_t*)img->Bit(), ktx2->dataSize);
+		if (KTX_SUCCESS != result) {
+			return false;
+		}
+
+		int threadcount = std::thread::hardware_concurrency() / 4;
+		if (threadcount <= 0)
+			threadcount = 1;
+		if (1 >= m_CompressType)
+		{
+			ktxBasisParams params = {};
+			params.structSize = sizeof(params);
+			params.threadCount = threadcount;
+			params.uastc = m_CompressType;//0 默认ETC1S/BLZ  1 uastc
+			params.compressionLevel = KTX_ETC1S_DEFAULT_COMPRESSION_LEVEL;
+			params.qualityLevel = m_QualityLevel;
+			result = ktxTexture2_CompressBasisEx((ktxTexture2*)ktx2, &params);// ktx_uint32_t(m_QualityLevel / 12));
+		}
+		else
+		{
+			ktxAstcParams params{};
+			params.structSize = sizeof(params);
+			params.threadCount = threadcount;
+			params.blockDimension = KTX_PACK_ASTC_BLOCK_DIMENSION_6x6;
+			params.mode = KTX_PACK_ASTC_ENCODER_MODE_LDR;
+			params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM;
+			params.normalMap = false;
+			if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_FASTEST)
+				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_FASTEST;
+			if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_FAST)
+				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_FAST;
+			if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM)
+				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM;
+			if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_THOROUGH)
+				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_THOROUGH;
+			if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_EXHAUSTIVE)
+				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_EXHAUSTIVE;
+
+			result = ktxTexture2_CompressAstcEx((ktxTexture2*)ktx2, &params);
+		}
+
+		if (m_DeflateUseZstd)
+		{
+			result = ktxTexture2_DeflateZstd((ktxTexture2*)ktx2, ktx_uint32_t(m_QualityLevel / 12));
+		}
+
+
+		if (KTX_SUCCESS != result)
+		{
+			return false;
+		}
+
+		if (m_Buffer) {
+			m_Buffer->Allocate(0);
+			ktx_uint8_t* pHead = nullptr;
+			ktx_size_t size = 0;
+			ktxTexture_WriteToMemory(ktx2, &pHead, &size);
+			m_Buffer->Append(pHead, size);
+		}
+		else {
+			ktxTexture_WriteToNamedFile(ktx2, m_file.c_str());
+		}
+		return true;
+
+	}
+
+	crnlib::pixel_format ToPixelFormat(ATexturePixelFormat format)
+	{
+		switch (format)
+		{
+		case eDXT1:
+			return crnlib::PIXEL_FMT_DXT1;
+		case eDXT2:
+			return crnlib::PIXEL_FMT_DXT2;
+		case eDXT3:
+			return crnlib::PIXEL_FMT_DXT3;
+		case eDXT4:
+			return crnlib::PIXEL_FMT_DXT4;
+		case eDXT5:
+			return crnlib::PIXEL_FMT_DXT5;
+		case e3DC:
+			return crnlib::PIXEL_FMT_3DC;
+		case eDXN:
+			return crnlib::PIXEL_FMT_DXN;
+		case eDXT5A:
+			return crnlib::PIXEL_FMT_DXT5A;
+		case eDXT5_CCxY:
+			return crnlib::PIXEL_FMT_DXT5_CCxY;
+		case eDXT5_xGxR:
+			return crnlib::PIXEL_FMT_DXT5_xGxR;
+		case eDXT5_xGBR:
+			return crnlib::PIXEL_FMT_DXT5_xGBR;
+		case eDXT5_AGBR:
+			return crnlib::PIXEL_FMT_DXT5_AGBR;
+		case eDXT1A:
+			return crnlib::PIXEL_FMT_DXT1A;
+		case eETC1:
+			return crnlib::PIXEL_FMT_ETC1;
+		case eR8G8B8:
+			return crnlib::PIXEL_FMT_R8G8B8;
+		case eL8:
+			return crnlib::PIXEL_FMT_L8;
+		case eA8:
+			return crnlib::PIXEL_FMT_A8;
+		case eA8L8:
+			return crnlib::PIXEL_FMT_A8L8;
+		case eA8R8G8B8:
+			return crnlib::PIXEL_FMT_A8R8G8B8;
+			break;
+		}
+		return crnlib::PIXEL_FMT_DXT5;
+	}
+	crn_format ToFormat(ATexturePixelFormat format)
+	{
+		switch (format)
+		{
+		case eDXT1A:
+		case eDXT1:
+			return cCRNFmtDXT1;
+		case 	eDXT2:
+		case eDXT3:
+		case eR8G8B8:
+		case eL8:
+		case eA8:
+		case eA8L8:
+		case eA8R8G8B8:
+			return cCRNFmtDXT3;
+		case eDXT4:
+		case eDXT5:
+			return cCRNFmtDXT5;
+		case eDXT5A:
+			return cCRNFmtDXT5A;
+		case e3DC:
+			return cCRNFmtDXN_XY;
+		case eDXN:
+			return cCRNFmtDXN_YX;
+		case eDXT5_CCxY:
+			return cCRNFmtDXT5_CCxY;
+		case eDXT5_xGxR:
+			return cCRNFmtDXT5_xGxR;
+		case eDXT5_xGBR:
+			return cCRNFmtDXT5_xGBR;
+		case eDXT5_AGBR:
+			return cCRNFmtDXT5_AGBR;
+		case eETC1:
+			return cCRNFmtETC1;
+			break;
+		}
+		return cCRNFmtDXT5;
+	}
+	bool ToCRN(crnlib::mipmapped_texture& src_tex)
+	{
+		crn_comp_params pComp_params;
+		if (m_eType == eCRN)
+			pComp_params.m_file_type = cCRNFileTypeCRN;
+		else
+			pComp_params.m_file_type = cCRNFileTypeDDS;
+		pComp_params.m_width = m_Size.Width;
+		pComp_params.m_height = m_Size.Height;
+		pComp_params.m_quality_level = m_QualityLevel;
+		pComp_params.m_dxt_compressor_type = cCRNDXTCompressorCRN;
+		pComp_params.m_format = ToFormat(m_PixelFormat);
+		pComp_params.m_levels = src_tex.get_num_levels();
+
+		crnlib::image_u8 temp_images[cCRNMaxFaces][cCRNMaxLevels];
+		for (crnlib::uint f = 0; f < src_tex.get_num_faces(); f++)
+		{
+			for (crnlib::uint l = 0; l < src_tex.get_num_levels(); l++)
+			{
+				crnlib::image_u8* p = src_tex.get_level_image(f, l, temp_images[f][l]);
+
+				pComp_params.m_pImages[f][l] = (crn_uint32*)p->get_ptr();
+			}
+		}
+
+		unsigned int pActual_quality_level = m_QualityLevel;
+		unsigned int image_write_flags = 0;
+		float bitrate;
+		crnlib::vector<crnlib::uint8> comp_data;
+		if (!crnlib::create_compressed_texture(pComp_params, comp_data, &pActual_quality_level, &bitrate))
+			return false;
+		if (comp_data.size_in_bytes() <= 0)
+			return false;
+		if (m_Buffer)
+			m_Buffer->Append(&comp_data[0], comp_data.size());
+		else
+		{
+			FILE* fp = fopen(m_file.c_str(), "wb");
+			if (!fp)
+			{
+				printf("fopen Error: ");
+				return false;
+			}
+
+			fwrite(&comp_data[0],1, comp_data.size(), fp);
+			fclose(fp);
+		}
+		return true;
+	}
+};
+
+#pragma endregion
 bool AImage::Save(const char* strFile, AImageEncodeType type)
 {
 	//stbi__start_write_callbacks
@@ -2213,27 +2567,12 @@ bool AImage::Save(const char* strFile, AImageEncodeType type)
 	case eCRN:
 	case eKTX2:
 	{
-		/*	GsSize size = { (int)Width(), (int)Height() };
-			GsTextureEncoderPtr ptrEncoder = new GsTextureEncoder(strFile, size, type);
-
-			const GsAny& any = params.Value(GsImageEncoderParameterType::eQuality);
-			if (any.Type == eI4 && any.AsInt() >= 0 && any.AsInt() <= 255)
-			{
-				ptrEncoder->QualityLevel() = any.AsInt();
-			}
-			const GsAny& any2 = params.Value(GsImageEncoderParameterType::eCompression);
-			if (any2.Type == eI4)
-			{
-				GsTexturePixelFormat type = (GsTexturePixelFormat)(any2.AsInt());
-				ptrEncoder->PixelFormat() = type;
-			}
-			bool b = ptrEncoder->BeginEncode();
-			if (!b) return false;
-			b = ptrEncoder->Write(this);
-			if (!b) return false;
-			b = ptrEncoder->FinishEncode();
-			if (!b) return false;
-			return b;*/
+			ASize size = { (int)Width(), (int)Height() };
+			Ktxwrite ptrEncoder( size, strFile);
+			ptrEncoder.m_eType = type;
+			ptrEncoder.m_PixelFormat = ATexturePixelFormat::eDXT5;
+			ptrEncoder.m_QualityLevel = 128;
+			return ptrEncoder.WriteImage(this);
 	}
 	case eTIFF:
 		break;
@@ -2295,28 +2634,14 @@ bool AImage::Save(AGrowByteBuffer* buff, AImageEncodeType type)
 	case eCRN:
 	case eKTX2:
 	{
-		/*	GsSize size = { (int)Width(), (int)Height() };
-			GsTextureEncoderPtr ptrEncoder = new GsTextureEncoder(strFile, size, type);
-
-			const GsAny& any = params.Value(GsImageEncoderParameterType::eQuality);
-			if (any.Type == eI4 && any.AsInt() >= 0 && any.AsInt() <= 255)
-			{
-				ptrEncoder->QualityLevel() = any.AsInt();
-			}
-			const GsAny& any2 = params.Value(GsImageEncoderParameterType::eCompression);
-			if (any2.Type == eI4)
-			{
-				GsTexturePixelFormat type = (GsTexturePixelFormat)(any2.AsInt());
-				ptrEncoder->PixelFormat() = type;
-			}
-			bool b = ptrEncoder->BeginEncode();
-			if (!b) return false;
-			b = ptrEncoder->Write(this);
-			if (!b) return false;
-			b = ptrEncoder->FinishEncode();
-			if (!b) return false;
-			return b;*/
+		ASize size = { (int)Width(), (int)Height() };
+		Ktxwrite ptrEncoder(size, buff);
+		ptrEncoder.m_eType = type;
+		ptrEncoder.m_PixelFormat = ATexturePixelFormat::eDXT5;
+		ptrEncoder.m_QualityLevel = 128;
+		return ptrEncoder.WriteImage(this);
 	}
+	break;
 	case eTIFF:
 		break;
 	case ePAM:
