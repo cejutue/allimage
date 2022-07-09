@@ -1233,7 +1233,7 @@ public:
 	virtual unsigned int Read(unsigned char* pBlob, int nLen);
 	virtual bool Eof();
 	virtual bool Rewind();
-	virtual unsigned int Seek(int nLen,int nwhere);
+	virtual unsigned int Seek(int nLen, int nwhere);
 	virtual unsigned int Offset() {
 		return m_Index;
 	}
@@ -1442,19 +1442,80 @@ bool ImageBuffer::Rewind()
 
 AImage::AImage()
 {
-	m_Info.RGBAType  = AColorBandType::eRGBA32;
+	m_Info.RGBAType = AColorBandType::eRGBA32;
 }
 AImage::AImage(unsigned int nWidth, unsigned int nHeight, AImage* img, const ARect& extent)
 {
+	m_Info.Width = nWidth;
+	m_Info.Height = nHeight;
+	int nBpp = 32;
+	m_Info.Bpp = nBpp;
+	if (nBpp != 32)
+		return;
+
+	m_Buffer.Allocate(nWidth * nHeight * (nBpp / 8));
+	if (m_Buffer.BufferSize() != nWidth * nHeight * (nBpp / 8))
+		return;
+	if (!img)
+		return;
+	ARect rectImg(0, 0, img->Width(), img->Height());
+	//如果裁切范围无效的话则不干活
+	if (extent.IsDisjoin(rectImg))
+		return;
+
+	//计算两个相交的范围。
+	ARect rect = rectImg.Intersects(extent);
+	const unsigned char* head = img->Bit();
+	head += rect.Left * 4 + rect.Top * img->Stride();
+	stbir_resize_uint8(head, rect.Width(), rect.Height(), img->Stride(), m_Buffer.BufferHead(),
+		m_Info.Width, m_Info.Height, Stride(), 4);
 }
 AImage::AImage(unsigned int nWidth, unsigned int nHeight, const unsigned char* raw, int nBpp)
 {
+	m_Info.Width = nWidth;
+	m_Info.Height = nHeight;
+	m_Info.Bpp = nBpp;
+	m_Info.EncodeType = AImageEncodeType::eUnknownImage;
+	if (nBpp == 32)
+	{
+		m_Info.RGBAType = AColorBandType::eRGBA32;
+	}
+	else
+	{
+		m_Info.RGBAType = AColorBandType::eRGB24;
+	}
+	m_Buffer.Allocate(nWidth * nHeight * nBpp / 8);
+	m_Buffer.Allocate(0);
+	m_Buffer.Append(raw, nWidth * nHeight * nBpp / 8);
 }
 AImage::AImage(unsigned int nWidth, unsigned int nHeight, AColorBandType eColorType)
 {
+	m_Info.RGBAType = eColorType;
+	m_Info.Bpp= AImage::BytePerPixcel(eColorType) * 8;
+	m_Buffer.Allocate(nWidth * nHeight * (m_Info.Bpp / 8));
+	if (m_Buffer.BufferSize() != nWidth * nHeight * (m_Info.Bpp / 8))
+		return;
+	m_Buffer.SetBufferValue(0);
+	m_Info.Width = nWidth;
+	m_Info.Height = nHeight;
 }
 AImage::AImage(const char* strFile)
 {
+	
+	FILE* pF = fopen(strFile, "rb");
+	if (!pF)
+		return  ;
+#ifdef _WIN32
+	struct _stat64 s;
+	_stat64(strFile, &s);
+#else
+	struct stat s;
+	stat(strFile, &s);
+#endif
+	m_Buffer.Allocate(s.st_size);
+	size_t n = fread((void*)m_Buffer.BufferHead(), 1, s.st_size, pF);
+	fclose(pF);
+	m_LoadOK = Init(m_Buffer.BufferHead(), m_Buffer.BufferSize());
 }
 
 
@@ -1610,7 +1671,7 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 	m_Info.RGBAType = AColorBandType::eRGBA32;
 	io.Rewind();
 	if (eType == eUnknownImage) return false;
-	if (eType == ePNG|| eType == eJPG || eType == eBMP || eType == eGIF ||eType == eTGA)
+	if (eType == ePNG || eType == eJPG || eType == eBMP || eType == eGIF || eType == eTGA)
 	{
 		//unsigned char* data = stbi_load_from_memory(blob,  nLen, 
 		//	&m_Info.Width, &m_Info.Height, &m_Info.Bpp, 0);	
@@ -1629,11 +1690,11 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 		if (!data)
 			return false;
 		m_Info.Bpp = com * 8;
-		if(com == 4)
+		if (com == 4)
 			m_Info.RGBAType = AColorBandType::eRGBA32;
 		else
 			m_Info.RGBAType = AColorBandType::eRGB24;
-		m_Buffer.Append(data, m_Info.Width*m_Info.Height * com);
+		m_Buffer.Append(data, m_Info.Width * m_Info.Height * com);
 		STBI_FREE(data);
 	}
 	else if (eType >= eKTX && eType <= eCRN)
@@ -1645,7 +1706,7 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 			if (blob) {
 				result = ktxTexture2_CreateFromMemory(blob, nLen, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, (ktxTexture2**)&pKtx2);
 			}
-			
+
 			if (KTX_SUCCESS != result)
 			{
 				return false;
@@ -1669,7 +1730,7 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 		//}
 		//else
 		{
-			crnlib::buffer_stream stream(blob,  nLen);
+			crnlib::buffer_stream stream(blob, nLen);
 			crnlib::data_stream_serializer ser(stream);
 			if (!tex.read_from_stream(ser, ToTextureFileType(m_Info.EncodeType)))
 				return false;
@@ -1714,7 +1775,7 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 		std::unique_ptr<TIFF, CloseTiff> ptrTiff(tif);
 		//get image info
 		m_Info.Width = 0;
-		m_Info.Height= 0;
+		m_Info.Height = 0;
 		TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &m_Info.Width);
 		TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &m_Info.Height);
 		int samplesperpixel = 0;
@@ -1735,7 +1796,7 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 		//unsigned int* color = m_Buffer.PtrT<unsigned int>();
 		unsigned int* head = m_Buffer.PtrT<unsigned int>();
 
-		int n = TIFFReadRGBAImageOriented(tif, m_Info.Width , m_Info.Height, head,	ORIENTATION_TOPLEFT, 1);
+		int n = TIFFReadRGBAImageOriented(tif, m_Info.Width, m_Info.Height, head, ORIENTATION_TOPLEFT, 1);
 		if (n == 0)
 			return false;
 	}
@@ -1745,7 +1806,7 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 		WebPDecBuffer* output_buffer = &config.output;
 		WebPBitstreamFeatures* bitstream = &config.input;
 		if (!WebPInitDecoderConfig(&config)) {
-			printf ( "WEBP Library version mismatch!\n");
+			printf("WEBP Library version mismatch!\n");
 			return false;
 		}
 		output_buffer->colorspace = MODE_RGBA;
@@ -1758,16 +1819,16 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 		status = WebPDecode(blob, nLen, &config);
 		if (VP8_STATUS_OK != status)
 			return false;
-		
-			m_Buffer.Allocate(0);
-			m_Buffer.Append(output_buffer->u.RGBA.rgba, output_buffer->u.RGBA.size);
-			WebPFreeDecBuffer(output_buffer);
-			m_Info.Width = output_buffer->width;
-			m_Info.Height = output_buffer->height;
-			if (m_Info.Width != 0 && m_Info.Height != 0)
-				m_Info.Bpp = output_buffer->u.RGBA.size / m_Info.Width / m_Info.Height * 8;
-			else
-				m_Info.Bpp = 0;
+
+		m_Buffer.Allocate(0);
+		m_Buffer.Append(output_buffer->u.RGBA.rgba, output_buffer->u.RGBA.size);
+		WebPFreeDecBuffer(output_buffer);
+		m_Info.Width = output_buffer->width;
+		m_Info.Height = output_buffer->height;
+		if (m_Info.Width != 0 && m_Info.Height != 0)
+			m_Info.Bpp = output_buffer->u.RGBA.size / m_Info.Width / m_Info.Height * 8;
+		else
+			m_Info.Bpp = 0;
 	}
 	return true;
 }
@@ -1785,24 +1846,22 @@ bool AImage::CopyFrom(AImage* pImage)
 
 AColorBandType AImage::RGBAType()
 {
-	//目前统一存储的RGBA，所以固定返回RGBA，以后有需要再扩展
-	//20200826，当前已经处于一个历史的变革期，需要扩展
 	return m_Info.RGBAType;
 }
 
 unsigned int AImage::Width()
 {
-	return 0;
+	return m_Info.Width;
 }
 
 unsigned int AImage::Height()
 {
-	return 0;
+	return m_Info.Height;
 }
 
 const unsigned char* AImage::Bit()
 {
-	return nullptr;
+	return m_Buffer.BufferHead();
 }
 
 
@@ -1979,7 +2038,7 @@ bool AImage::Save(const unsigned char* pBlob, int nLen, AImageEncodeType type)
 AImage* AImage::LoadFrom(const char* strFile)
 {
 	AGrowByteBuffer buff;
-	FILE* pF = fopen(strFile,"rb");
+	FILE* pF = fopen(strFile, "rb");
 	if (!pF)
 		return  0;
 #ifdef _WIN32
@@ -1992,8 +2051,8 @@ AImage* AImage::LoadFrom(const char* strFile)
 	buff.Allocate(s.st_size);
 	size_t n = fread((void*)buff.BufferHead(), 1, s.st_size, pF);
 	fclose(pF);
-	auto img =  new AImage(buff.BufferHead(), s.st_size);
-	if(img && img->m_LoadOK)
+	auto img = new AImage(buff.BufferHead(), s.st_size);
+	if (img && img->m_LoadOK)
 		return img;
 	return nullptr;
 }

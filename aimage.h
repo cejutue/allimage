@@ -968,7 +968,7 @@ public:
 	/// \param nWidth 图像的宽度
 	/// \param nHeight 图像的高度 
 	/// \param raw   原始数据  
-	/// \param nBpp  颜色位数，仅支持32位  
+	/// \param nBpp  颜色位数，  
 	AImage(unsigned int nWidth, unsigned int nHeight, const unsigned char* raw, int nBpp = 32);
 
 	/// \brief 构造指定颜色格式的位图，因为颜色格式不支持修改，因此需要创建非32位图像是，通过此构造函数来创建位图
