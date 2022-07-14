@@ -36,5 +36,17 @@ int main()
     imgktx2->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\0318_img0a.ktx2", AImageEncodeType::eKTX2);
     imgwebp->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\baby_tuxa.webp", AImageEncodeType::eWEBP);
     imgtiff->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\quad-lzw-compata.tiff", AImageEncodeType::eTIFF);
+    AGrowByteBuffer buff;
+    imgpng->Save(&buff, AImageEncodeType::ePNG);
+    imgtga->Save(&buff, AImageEncodeType::eTGA);
+    imgjpg->Save(&buff, AImageEncodeType::eJPG);
+    imggif->Save(&buff, AImageEncodeType::eGIF);
+    imgktx->Save(&buff, AImageEncodeType::eKTX);
+    imgdds->Save(&buff, AImageEncodeType::eDDS);
+    imgcrn->Save(&buff, AImageEncodeType::eCRN);
+    imgktx2->Save(&buff, AImageEncodeType::eKTX2);
+    imgwebp->Save(&buff, AImageEncodeType::eWEBP);
+    imgtiff->Save(&buff, AImageEncodeType::eTIFF);
+
 }
 
