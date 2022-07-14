@@ -1690,14 +1690,18 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 		io.Rewind();
 
 		int com;
-		stbi_uc* data = stbi_load_from_callbacks(&cb, &io, &m_Info.Width, &m_Info.Height, &com, 4);
+		stbi_uc* data = stbi_load_from_callbacks(&cb, &io, &m_Info.Width, &m_Info.Height, &com, 0);
 		if (!data)
 			return false;
 		m_Info.Bpp = com * 8;
 		if (com == 4)
 			m_Info.RGBAType = AColorBandType::eRGBA32;
-		else
+		else if(com == 3)
 			m_Info.RGBAType = AColorBandType::eRGB24;
+		else if (com == 2)
+			m_Info.RGBAType = AColorBandType::eGrayA;
+		else if (com == 1)
+			m_Info.RGBAType = AColorBandType::eGray;
 		m_Buffer.Append(data, m_Info.Width * m_Info.Height * com);
 		STBI_FREE(data);
 	}
@@ -2546,7 +2550,7 @@ bool AImage::Save(const char* strFile, AImageEncodeType type)
 	}break;
 	case eJPG:
 	{
-		return  stbi_write_jpg(strFile, w, h, bpp, m_Buffer.BufferHead(), 75);
+		return  stbi_write_jpg(strFile, w, h, bpp, m_Buffer.BufferHead(), 0);
 	}break;
 	case eBMP:
 	{
@@ -2595,7 +2599,7 @@ bool AImage::Save(const char* strFile, AImageEncodeType type)
 
 bool AImage::Save(AGrowByteBuffer* buff, AImageEncodeType type)
 {
-	if (!buff|| m_Buffer.BufferSize() <= 0 || m_Info.Width <= 0 || m_Info.Height <= 0 )
+	if (!buff || m_Info.Width <= 0 || m_Info.Height <= 0 )
 		return false;
 
 	int w = m_Info.Width;

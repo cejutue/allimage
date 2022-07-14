@@ -914,6 +914,9 @@ enum class AColorBandType
 
 	eRGB24,
 	eBGR24,
+
+	eGray,
+	eGrayA
 };
 
 /// \brief Í¼Ïñ±àÂëÀàĞÍ
