@@ -2535,14 +2535,14 @@ bool AImage::Save(const char* strFile, AImageEncodeType type)
 	int h = m_Info.Height;
 	int bpp = m_Info.Bpp / 8;
 	int size = w * h * bpp;
-
+	int stride_bytes = w * bpp;
 	switch (type)
 	{
 	case eUnknownImage:
 		break;
 	case ePNG:
 	{
-		return  stbi_write_png(strFile, w, h, bpp, m_Buffer.BufferHead(), size);
+		return  stbi_write_png(strFile, w, h, bpp, m_Buffer.BufferHead(), stride_bytes);
 	}break;
 	case eJPG:
 	{
@@ -2591,7 +2591,6 @@ bool AImage::Save(const char* strFile, AImageEncodeType type)
 	}
 
 	return false;
-	return false;
 }
 
 bool AImage::Save(AGrowByteBuffer* buff, AImageEncodeType type)
@@ -2603,7 +2602,7 @@ bool AImage::Save(AGrowByteBuffer* buff, AImageEncodeType type)
 	int h = m_Info.Height;
 	int bpp = m_Info.Bpp / 8;
 	int size = w * h * bpp;
-
+	int stride_bytes = w * bpp;
 	ImageBuffer buffer(buff);
 	switch (type)
 	{
@@ -2611,7 +2610,7 @@ bool AImage::Save(AGrowByteBuffer* buff, AImageEncodeType type)
 		break;
 	case ePNG:
 	{
-		return stbi_write_png_to_func(my_stbi_write_func, &buffer, w, h, bpp, m_Buffer.BufferHead(), size);
+		return stbi_write_png_to_func(my_stbi_write_func, &buffer, w, h, bpp, m_Buffer.BufferHead(), stride_bytes);
 	}break;
 	case eJPG:
 	{
