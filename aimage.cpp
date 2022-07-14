@@ -2186,7 +2186,7 @@ public:
 		return len;
 	}
 };
-struct Ktxwrite
+struct KtxWriter
 {
 	std::string m_file;
 	AByteBuffer* m_Buffer = NULL;
@@ -2206,7 +2206,7 @@ struct Ktxwrite
 	}
 
 public:
-	Ktxwrite(const ASize& s, const char* file)
+	KtxWriter(const ASize& s, const char* file)
 	{
 		m_Size = s;
 		m_file = file;
@@ -2214,7 +2214,7 @@ public:
 		m_CompressType = 0;
 		m_DeflateUseZstd = false;
 	}
-	Ktxwrite(const ASize& s, AByteBuffer* buff)
+	KtxWriter(const ASize& s, AByteBuffer* buff)
 	{
 		m_Size = s;
 		m_Buffer = buff;
@@ -2568,7 +2568,7 @@ bool AImage::Save(const char* strFile, AImageEncodeType type)
 	case eKTX2:
 	{
 			ASize size = { (int)Width(), (int)Height() };
-			Ktxwrite ptrEncoder( size, strFile);
+			KtxWriter ptrEncoder( size, strFile);
 			ptrEncoder.m_eType = type;
 			ptrEncoder.m_PixelFormat = ATexturePixelFormat::eDXT5;
 			ptrEncoder.m_QualityLevel = 128;
@@ -2635,7 +2635,7 @@ bool AImage::Save(AGrowByteBuffer* buff, AImageEncodeType type)
 	case eKTX2:
 	{
 		ASize size = { (int)Width(), (int)Height() };
-		Ktxwrite ptrEncoder(size, buff);
+		KtxWriter ptrEncoder(size, buff);
 		ptrEncoder.m_eType = type;
 		ptrEncoder.m_PixelFormat = ATexturePixelFormat::eDXT5;
 		ptrEncoder.m_QualityLevel = 128;
