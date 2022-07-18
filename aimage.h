@@ -1089,7 +1089,8 @@ public:
 	static bool ParseImageHeaderInfo(const unsigned char* blob, unsigned int len, AImageHeaderInfo* info);
 
 	static int RGBAIndex(AColorBandType t, char c);
-
+	static std::string MIMEType(AImageEncodeType eType);
+	static std::string FileExtension(AImageEncodeType eType);
 	bool IsValid()const  { return m_LoadOK; };
 	protected:
 		bool m_LoadOK = false;

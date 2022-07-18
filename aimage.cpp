@@ -2713,7 +2713,7 @@ AImageEncodeType AImage::EncodeType(const char* file)
 
 
 /// \brief 根据影像的编码类型获取对应影像文件扩展名
-string FileExtension(AImageEncodeType eType)
+string AImage::FileExtension(AImageEncodeType eType)
 {
 	switch (eType)
 	{
@@ -2741,7 +2741,7 @@ string FileExtension(AImageEncodeType eType)
 	return "";
 }
 /// \brief 根据影像的编码类型获取对应的mimetype定义
-string MIMEType(AImageEncodeType eType)
+string AImage::MIMEType(AImageEncodeType eType)
 {
 	switch (eType)
 	{
