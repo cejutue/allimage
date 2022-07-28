@@ -1696,7 +1696,7 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 		m_Info.Bpp = com * 8;
 		if (com == 4)
 			m_Info.RGBAType = AColorBandType::eRGBA32;
-		else if(com == 3)
+		else if (com == 3)
 			m_Info.RGBAType = AColorBandType::eRGB24;
 		else if (com == 2)
 			m_Info.RGBAType = AColorBandType::eGrayA;
@@ -2076,7 +2076,7 @@ typedef ToARGB<AColorBandType::eARGB32, 1, 2, 3, 0>   FromARGB32;
 
 typedef ToARGB<AColorBandType::eRGB24, 0, 1, 2, -1>   FromRGB24;
 typedef ToARGB<AColorBandType::eBGR24, 2, 1, 0, -1>   FromBGR24;
-bool WriteRow(AColorBandType inputType, unsigned char* webpargb,const unsigned char* pRow, int nLen, int nRowCount)
+bool WriteRow(AColorBandType inputType, unsigned char* webpargb, const unsigned char* pRow, int nLen, int nRowCount)
 {
 	//这里要将所有颜色转为argb
 	switch (inputType)
@@ -2119,7 +2119,7 @@ bool WriteRow(AColorBandType inputType, unsigned char* webpargb,const unsigned c
 		break;
 	}
 
-	memcpy((unsigned char*)(webpargb) + nRowCount * nLen, pRow, nLen);
+	memcpy((unsigned char*)(webpargb)+nRowCount * nLen, pRow, nLen);
 	return true;
 }
 int CustomWebPWriterFunction(const uint8_t* data, size_t data_size, const WebPPicture* picture)
@@ -2143,34 +2143,39 @@ bool SaveWEBP(ImageIO* IO, AImageHeaderInfo& info, AGrowByteBuffer* buff)
 
 	//begin
 	if (!WebPValidateConfig(&m_Config)) {
-		AColorBandType InputType = info.RGBAType;
-		m_Picture.use_argb = (((int)InputType <= 3) ? 1 : 0);
-		m_Picture.width = info.Width;
-		m_Picture.height = info.Height;
-		m_Picture.argb_stride = info.Width;
-		m_Picture.writer = &CustomWebPWriterFunction;
-		m_Picture.custom_ptr = (void*)IO;
-		if (!WebPPictureAlloc(&m_Picture)) {
-
-			return false;
-		}
-		int Stride = info.Width * info.Bpp / 8;
-		auto pHead = buff->BufferHead() + 0 * info.Width * info.Bpp / 8;
-		for (int i = 0; i < info.Height; i++)
-			pHead = buff->BufferHead() + i * info.Width * info.Bpp / 8;
-		WriteRow(info.RGBAType, (unsigned char*)m_Picture.argb, pHead, Stride, Stride);
-
-
-		//end write
-		WebPAuxStats stats;
-		m_Picture.stats = &stats;
-		if (!WebPEncode(&m_Config, &m_Picture))
-		{
-			return false;
-		}
-
-		WebPPictureFree(&m_Picture);
+		return false;
 	}
+	AColorBandType InputType = info.RGBAType;
+	m_Picture.use_argb = (((int)InputType <= 3) ? 1 : 0);
+	m_Picture.width = info.Width;
+	m_Picture.height = info.Height;
+	m_Picture.argb_stride = info.Width;
+	m_Picture.writer = &CustomWebPWriterFunction;
+	m_Picture.custom_ptr = (void*)IO;
+
+	if (!WebPPictureAlloc(&m_Picture)) {
+
+		return false;
+	}
+	int Stride = info.Width * info.Bpp / 8;
+	auto pHead = buff->BufferHead() + 0 * info.Width * info.Bpp / 8;
+	for (int i = 0; i < info.Height; i++)
+	{
+		pHead = buff->BufferHead() + i * info.Width * info.Bpp / 8;
+		WriteRow(info.RGBAType, (unsigned char*)m_Picture.argb, pHead, Stride, i);
+	}
+
+
+	//end write
+	WebPAuxStats stats;
+	m_Picture.stats = &stats;
+	if (!WebPEncode(&m_Config, &m_Picture))
+	{
+		return false;
+	}
+
+	WebPPictureFree(&m_Picture);
+
 	return true;
 }
 #pragma endregion 
@@ -2520,7 +2525,7 @@ public:
 				return false;
 			}
 
-			fwrite(&comp_data[0],1, comp_data.size(), fp);
+			fwrite(&comp_data[0], 1, comp_data.size(), fp);
 			fclose(fp);
 		}
 		return true;
@@ -2571,12 +2576,12 @@ bool AImage::Save(const char* strFile, AImageEncodeType type)
 	case eCRN:
 	case eKTX2:
 	{
-			ASize size = { (int)Width(), (int)Height() };
-			KtxWriter ptrEncoder( size, strFile);
-			ptrEncoder.m_eType = type;
-			ptrEncoder.m_PixelFormat = ATexturePixelFormat::eDXT5;
-			ptrEncoder.m_QualityLevel = 128;
-			return ptrEncoder.WriteImage(this);
+		ASize size = { (int)Width(), (int)Height() };
+		KtxWriter ptrEncoder(size, strFile);
+		ptrEncoder.m_eType = type;
+		ptrEncoder.m_PixelFormat = ATexturePixelFormat::eDXT5;
+		ptrEncoder.m_QualityLevel = 128;
+		return ptrEncoder.WriteImage(this);
 	}
 	case eTIFF:
 		break;
@@ -2599,7 +2604,7 @@ bool AImage::Save(const char* strFile, AImageEncodeType type)
 
 bool AImage::Save(AGrowByteBuffer* buff, AImageEncodeType type)
 {
-	if (!buff || m_Info.Width <= 0 || m_Info.Height <= 0 )
+	if (!buff || m_Info.Width <= 0 || m_Info.Height <= 0)
 		return false;
 
 	int w = m_Info.Width;
