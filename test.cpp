@@ -15,7 +15,17 @@
 
 int main()
 {
-    AImage* imgpng =  AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\z001.png");
+
+    AImage* imgpng = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\1.jpg");
+    imgpng->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\1.ktx2", AImageEncodeType::eKTX2);
+    //AImage* imgpng2 = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\1.ktx2");
+    //imgpng2->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\1aaa.png", AImageEncodeType::ePNG);
+        //AImage* imgpng =  AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\z001a.png");
+        //imgpng->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\z001a.ktx2", AImageEncodeType::eKTX2);
+
+        //AImage* imgpng2 = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\z001a.png");
+        //imgpng2->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\z001.ktx2", AImageEncodeType::eKTX2);
+ /*   AImage* imgpng =  AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\z001.png");
     AImage* imgtga = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\z001.tga");
     AImage* imgjpg = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\world.jpg");
     AImage* imggif = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\transgif.gif");
@@ -34,19 +44,21 @@ int main()
     imgdds->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\kernel_ktxa.dds", AImageEncodeType::eDDS);
     imgcrn->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\kernel_ktxa.crn", AImageEncodeType::eCRN);
     imgktx2->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\0318_img0a.ktx2", AImageEncodeType::eKTX2);
+    
+    imgwebp->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\baby_tuxa.png", AImageEncodeType::ePNG);
     imgwebp->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\baby_tuxa.webp", AImageEncodeType::eWEBP);
-    imgtiff->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\quad-lzw-compata.tiff", AImageEncodeType::eTIFF);
-    AGrowByteBuffer buff;
-    imgpng->Save(&buff, AImageEncodeType::ePNG);
-    imgtga->Save(&buff, AImageEncodeType::eTGA);
-    imgjpg->Save(&buff, AImageEncodeType::eJPG);
-    imggif->Save(&buff, AImageEncodeType::eGIF);
-    imgktx->Save(&buff, AImageEncodeType::eKTX);
-    imgdds->Save(&buff, AImageEncodeType::eDDS);
-    imgcrn->Save(&buff, AImageEncodeType::eCRN);
-    imgktx2->Save(&buff, AImageEncodeType::eKTX2);
-    imgwebp->Save(&buff, AImageEncodeType::eWEBP);
-    imgtiff->Save(&buff, AImageEncodeType::eTIFF);
+    imgtiff->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\quad-lzw-compata.tiff", AImageEncodeType::eTIFF);*/
+    //AGrowByteBuffer buff;
+    //imgpng->Save(&buff, AImageEncodeType::ePNG);
+    //imgtga->Save(&buff, AImageEncodeType::eTGA);
+    //imgjpg->Save(&buff, AImageEncodeType::eJPG);
+    //imggif->Save(&buff, AImageEncodeType::eGIF);
+    //imgktx->Save(&buff, AImageEncodeType::eKTX);
+    //imgdds->Save(&buff, AImageEncodeType::eDDS);
+    //imgcrn->Save(&buff, AImageEncodeType::eCRN);
+    //imgktx2->Save(&buff, AImageEncodeType::eKTX2);
+    //imgwebp->Save(&buff, AImageEncodeType::eWEBP);
+    //imgtiff->Save(&buff, AImageEncodeType::eTIFF);
 
 }
 

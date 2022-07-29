@@ -11,7 +11,7 @@
 #include "ktx.h"
 #include "vkformat_enum.h"
 #include "vk_format.h"
-
+#include "dfd.h"
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1722,6 +1722,10 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 			m_Info.Width = pKtx2->baseWidth;
 			m_Info.Height = pKtx2->baseHeight;
 			m_Buffer.Allocate(m_Info.Width * m_Info.Height * 4);
+
+			auto s = ktxTexture_GetData(pKtx2);
+			auto size = ktxTexture_GetDataSize(pKtx2);
+			auto size2 = ktxTexture_GetDataSizeUncompressed(pKtx2);
 			memcpy((void*)m_Buffer.BufferHead(), pKtx2->pData, pKtx2->dataSize);
 
 			return true;
@@ -2312,6 +2316,11 @@ public:
 		return true;
 	}
 
+	void writeId(std::ostream& dst, bool chktest) {
+		dst << " toktx v4.0.__default__ / libktx v4.0.__default__" << " ";
+	}
+
+
 
 	bool ToKTX2(AImage* img)
 	{
@@ -2319,22 +2328,62 @@ public:
 		//ktx_error_code_e err;
 		ktx_error_code_e result;
 		ktxTextureCreateInfo createInfo;
-		//createInfo.glInternalformat = 32856;//GL_RGB8;   // Ignored if creating a ktxTexture2.
-		createInfo.vkFormat = ToKtx2VkFormat(img->RGBAType());//VK_FORMAT_R8G8B8_UNORM;   // Ignored if creating a ktxTexture1.
+		ktx_uint8_t* pData = (ktx_uint8_t*)img->Bit();
+		AGrowByteBuffer buff;
+		//createInfo.glInternalformat = GL_RGB8;   // Ignored if creating a ktxTexture2.
+		////三波段存储会无法识别,三方库bug
+		//if ((int)img->RGBAType() == 4 || (int)img->RGBAType() == 5)
+		//{
+		//	buff.Allocate(img->Width() * img->Height() * 4);
+		//	buff.SetBufferValue(0);
+		//	auto	tmppData = buff.BufferHead();
+		//	long long charsize = img->Width() * img->Height();
+		//	for (int i = 0; i < charsize;i++)
+		//	{
+		//		pData = pData + 3;
+		//		tmppData = tmppData +  4;
+		//		tmppData[0] = pData[0];
+		//		tmppData[1] = pData[1];
+		//		tmppData[2] = pData[2];
+		//		tmppData[3] = 14;
+		//	}
+		//	pData = buff.BufferHead();
+		//	if((int)img->RGBAType() == 4)
+		//		createInfo.vkFormat = VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
+		//	else
+		//		createInfo.vkFormat = VkFormat::VK_FORMAT_B8G8R8A8_UNORM;
+		//}
+		//else
+		{
+			createInfo.vkFormat = ToKtx2VkFormat(img->RGBAType());//VK_FORMAT_R8G8B8_UNORM;   // Ignored if creating a ktxTexture1.
+		}
 		createInfo.baseWidth = img->Width();
 		createInfo.baseHeight = img->Height();
 		createInfo.baseDepth = 1;
 		createInfo.numDimensions = 2;
-		createInfo.numLevels = 1;//log2(max_dim) + 1;
+		createInfo.numLevels = 1;
 		createInfo.numLayers = 1;
 		createInfo.numFaces = 1;
 		createInfo.isArray = KTX_FALSE;
 		createInfo.generateMipmaps = KTX_FALSE;
+
+		//ktx_uint32_t* dfd = vk2dfd((VkFormat)createInfo.vkFormat);
+		//if (!dfd)
+		//	return KTX_UNSUPPORTED_TEXTURE_TYPE;
+		//createInfo.pDfd = dfd;
 		result = ktxTexture2_Create(&createInfo, ktxTextureCreateStorageEnum::KTX_TEXTURE_CREATE_ALLOC_STORAGE, (ktxTexture2**)&ktx2);
-		result = ktxTexture_SetImageFromMemory(ktx2, 0, 0, 0, (ktx_uint8_t*)img->Bit(), ktx2->dataSize);
+		result = ktxTexture_SetImageFromMemory(ktx2, 0, 0, 0, pData, ktx2->dataSize);
 		if (KTX_SUCCESS != result) {
 			return false;
 		}
+
+		stringstream writer;
+		writeId(writer, 1);
+		ktxHashList_AddKVPair(&ktx2->kvDataHead, KTX_WRITER_KEY,
+			(ktx_uint32_t)writer.str().length() + 1,
+			writer.str().c_str());
+
+		string swizzle;
 
 		int threadcount = std::thread::hardware_concurrency() / 4;
 		if (threadcount <= 0)
@@ -2344,10 +2393,18 @@ public:
 			ktxBasisParams params = {};
 			params.structSize = sizeof(params);
 			params.threadCount = threadcount;
-			params.uastc = m_CompressType;//0 默认ETC1S/BLZ  1 uastc
+			params.uastc = m_CompressType;//0 默认 ETC1S/BLZ  1 uastc
 			params.compressionLevel = KTX_ETC1S_DEFAULT_COMPRESSION_LEVEL;
 			params.qualityLevel = m_QualityLevel;
+			params.uastcFlags = KTX_PACK_UASTC_LEVEL_FASTEST;
+			//std::string defaultSwizzle = "rrr1";
+			//for (int i = 0; i < 4; i++) {
+			//	params.inputSwizzle[i] = defaultSwizzle[i];
+			//}
+			//params.normalMap = KTX_FALSE;
+			//params.verbose = true;
 			result = ktxTexture2_CompressBasisEx((ktxTexture2*)ktx2, &params);// ktx_uint32_t(m_QualityLevel / 12));
+			//result = ktxTexture2_TranscodeBasis((ktxTexture2*)ktx2, KTX_TTF_BC1_RGB, 0);
 		}
 		else
 		{
@@ -2377,7 +2434,6 @@ public:
 			result = ktxTexture2_DeflateZstd((ktxTexture2*)ktx2, ktx_uint32_t(m_QualityLevel / 12));
 		}
 
-
 		if (KTX_SUCCESS != result)
 		{
 			return false;
@@ -2387,11 +2443,16 @@ public:
 			m_Buffer->Allocate(0);
 			ktx_uint8_t* pHead = nullptr;
 			ktx_size_t size = 0;
-			ktxTexture_WriteToMemory(ktx2, &pHead, &size);
+			result = ktxTexture_WriteToMemory(ktx2, &pHead, &size);
 			m_Buffer->Append(pHead, size);
 		}
 		else {
-			ktxTexture_WriteToNamedFile(ktx2, m_file.c_str());
+			//FILE* fp = fopen(m_file.c_str(),"wb");
+			//if(fp)
+			//	result = ktxTexture_WriteToStdioStream(ktxTexture(ktx2), fp);
+			//fclose(fp);
+			result = ktxTexture_WriteToNamedFile(ktx2, m_file.c_str());
+			ktxTexture_Destroy(ktx2);
 		}
 		return true;
 
