@@ -1721,13 +1721,12 @@ bool AImage::Init(const unsigned char* blob, int nLen)
 			{
 				return false;
 			}
+
+			result = ktxTexture2_TranscodeBasis((ktxTexture2*)pKtx2, KTX_TTF_RGBA32, 0);
 			m_Info.Width = pKtx2->baseWidth;
 			m_Info.Height = pKtx2->baseHeight;
 			m_Buffer.Allocate(m_Info.Width * m_Info.Height * 4);
-
-			auto s = ktxTexture_GetData(pKtx2);
-			auto size = ktxTexture_GetDataSize(pKtx2);
-			auto size2 = ktxTexture_GetDataSizeUncompressed(pKtx2);
+			m_Info.Bpp = 32;
 			memcpy((void*)m_Buffer.BufferHead(), pKtx2->pData, pKtx2->dataSize);
 
 			return true;
