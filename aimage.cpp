@@ -2332,21 +2332,22 @@ public:
 		ktxTexture2* ktx2;
 		ktx_error_code_e result;
 		ktxTextureCreateInfo createInfo;
-		ktx_uint8_t* pData = (ktx_uint8_t*)img->Bit();
+
 		AGrowByteBuffer buff;
 		createInfo.vkFormat = ToKtx2VkFormat(img->RGBAType());
 		bool IsNewImg = false;
 		if (pimg->Width() % 4 != 0 || pimg->Height() % 4 != 0)
 		{
-			int newWidth = 4 - pimg->Width() % 4 + pimg->Width();
-			int newHeight = 4 - pimg->Height() % 4 + pimg->Height();
+			int newWidth = (pimg->Width() % 4 == 0 )? pimg->Width():4 - pimg->Width() % 4 + pimg->Width();
+			int newHeight = (pimg->Height() % 4 == 0)? pimg->Height():4 - pimg->Height() % 4 + pimg->Height();
 			ARect rc(0, 0, pimg->Width(), pimg->Height());
 			pimg = new  AImage(newWidth, newHeight, pimg, rc);
 			IsNewImg = true;
-		}
 
-		createInfo.baseWidth = img->Width();
-		createInfo.baseHeight = img->Height();
+		}
+		ktx_uint8_t* pData = (ktx_uint8_t*)pimg->Bit();
+		createInfo.baseWidth = pimg->Width();
+		createInfo.baseHeight = pimg->Height();
 		createInfo.baseDepth = 1;
 		createInfo.numDimensions = 2;
 		createInfo.numLevels = 1;
