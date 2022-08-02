@@ -1450,12 +1450,14 @@ AImage::AImage()
 }
 AImage::AImage(unsigned int nWidth, unsigned int nHeight, AImage* img, const ARect& extent)
 {
+	if (!img)
+		return;
+	m_Info.RGBAType = img->RGBAType();
 	m_Info.Width = nWidth;
 	m_Info.Height = nHeight;
-	int nBpp = 32;
-	m_Info.Bpp = nBpp;
-	if (nBpp != 32)
-		return;
+	int nBpp = img->m_Info.Bpp;
+	m_Info.Bpp = img->m_Info.Bpp;
+
 
 	m_Buffer.Allocate(nWidth * nHeight * (nBpp / 8));
 	if (m_Buffer.BufferSize() != nWidth * nHeight * (nBpp / 8))
@@ -1470,9 +1472,9 @@ AImage::AImage(unsigned int nWidth, unsigned int nHeight, AImage* img, const ARe
 	//计算两个相交的范围。
 	ARect rect = rectImg.Intersects(extent);
 	const unsigned char* head = img->Bit();
-	head += rect.Left * 4 + rect.Top * img->Stride();
+	head += rect.Left * (nBpp/8) + rect.Top * img->Stride();
 	stbir_resize_uint8(head, rect.Width(), rect.Height(), img->Stride(), m_Buffer.BufferHead(),
-		m_Info.Width, m_Info.Height, Stride(), 4);
+		m_Info.Width, m_Info.Height, Stride(), (nBpp / 8));
 }
 AImage::AImage(unsigned int nWidth, unsigned int nHeight, const unsigned char* raw, int nBpp)
 {
@@ -2324,39 +2326,33 @@ public:
 
 	bool ToKTX2(AImage* img)
 	{
-		ktxTexture* ktx2;
+		AImage* pimg = img;
+		ktxTexture2* ktx2;
 		//ktx_error_code_e err;
 		ktx_error_code_e result;
 		ktxTextureCreateInfo createInfo;
 		ktx_uint8_t* pData = (ktx_uint8_t*)img->Bit();
 		AGrowByteBuffer buff;
-		//createInfo.glInternalformat = GL_RGB8;   // Ignored if creating a ktxTexture2.
-		////三波段存储会无法识别,三方库bug
-		//if ((int)img->RGBAType() == 4 || (int)img->RGBAType() == 5)
-		//{
-		//	buff.Allocate(img->Width() * img->Height() * 4);
-		//	buff.SetBufferValue(0);
-		//	auto	tmppData = buff.BufferHead();
-		//	long long charsize = img->Width() * img->Height();
-		//	for (int i = 0; i < charsize;i++)
-		//	{
-		//		pData = pData + 3;
-		//		tmppData = tmppData +  4;
-		//		tmppData[0] = pData[0];
-		//		tmppData[1] = pData[1];
-		//		tmppData[2] = pData[2];
-		//		tmppData[3] = 14;
-		//	}
-		//	pData = buff.BufferHead();
-		//	if((int)img->RGBAType() == 4)
-		//		createInfo.vkFormat = VkFormat::VK_FORMAT_R8G8B8A8_UNORM;
-		//	else
-		//		createInfo.vkFormat = VkFormat::VK_FORMAT_B8G8R8A8_UNORM;
-		//}
-		//else
+		createInfo.vkFormat = ToKtx2VkFormat(img->RGBAType());//VK_FORMAT_R8G8B8_UNORM;   // Ignored if creating a ktxTexture1.
+		if (pimg->Width() % 4 != 0 || pimg->Height() % 4 != 0)
 		{
-			createInfo.vkFormat = ToKtx2VkFormat(img->RGBAType());//VK_FORMAT_R8G8B8_UNORM;   // Ignored if creating a ktxTexture1.
+
+			//int newWidth = pimg->Width() % 4 + img->Width();
+			//int newHeight = pimg->Height() % 4 + img->Height();
+			//for (int i = 0; i < newHeight; i++)
+			//{
+			//	for (int j = 0; j < 0; j++)
+			//	{
+
+			//	}
+			//}
+			////ARect rc(0, 0, pimg->Width(), pimg->Height());
+			//AImage g(newWidth, newHeight, pimg, rc);
 		}
+
+	
+		
+
 		createInfo.baseWidth = img->Width();
 		createInfo.baseHeight = img->Height();
 		createInfo.baseDepth = 1;
@@ -2371,8 +2367,8 @@ public:
 		//if (!dfd)
 		//	return KTX_UNSUPPORTED_TEXTURE_TYPE;
 		//createInfo.pDfd = dfd;
-		result = ktxTexture2_Create(&createInfo, ktxTextureCreateStorageEnum::KTX_TEXTURE_CREATE_ALLOC_STORAGE, (ktxTexture2**)&ktx2);
-		result = ktxTexture_SetImageFromMemory(ktx2, 0, 0, 0, pData, ktx2->dataSize);
+		result = ktxTexture2_Create(&createInfo, ktxTextureCreateStorageEnum::KTX_TEXTURE_CREATE_ALLOC_STORAGE, &ktx2);
+		result = ktxTexture_SetImageFromMemory(ktxTexture(ktx2), 0, 0, 0, pData, ktx2->dataSize);
 		if (KTX_SUCCESS != result) {
 			return false;
 		}
@@ -2392,19 +2388,29 @@ public:
 		{
 			ktxBasisParams params = {};
 			params.structSize = sizeof(params);
-			params.threadCount = threadcount;
+			params.threadCount =  threadcount;
 			params.uastc = m_CompressType;//0 默认 ETC1S/BLZ  1 uastc
 			params.compressionLevel = KTX_ETC1S_DEFAULT_COMPRESSION_LEVEL;
 			params.qualityLevel = m_QualityLevel;
 			params.uastcFlags = KTX_PACK_UASTC_LEVEL_FASTEST;
-			//std::string defaultSwizzle = "rrr1";
+			params.normalMap = false;
+			//std::string defaultSwizzle = "rrr0";
 			//for (int i = 0; i < 4; i++) {
 			//	params.inputSwizzle[i] = defaultSwizzle[i];
 			//}
-			//params.normalMap = KTX_FALSE;
-			//params.verbose = true;
-			result = ktxTexture2_CompressBasisEx((ktxTexture2*)ktx2, &params);// ktx_uint32_t(m_QualityLevel / 12));
-			//result = ktxTexture2_TranscodeBasis((ktxTexture2*)ktx2, KTX_TTF_BC1_RGB, 0);
+			params.normalMap = KTX_FALSE;
+			params.uastc = false;
+			params.verbose = false;
+			uint32_t componentCount, componentByteLength;
+			ktxTexture2_GetComponentInfo((ktxTexture2*)ktx2,
+				&componentCount,
+				&componentByteLength);
+			if (componentCount == 1 || componentCount == 2) {
+				params.separateRGToRGB_A = false;
+			} ktx_uint32_t transfer = ktxTexture2_GetOETF((ktxTexture2*)ktx2);
+			//
+			result = ktxTexture2_CompressBasisEx((ktxTexture2*)ktx2, &params);
+
 		}
 		else
 		{
@@ -2443,7 +2449,7 @@ public:
 			m_Buffer->Allocate(0);
 			ktx_uint8_t* pHead = nullptr;
 			ktx_size_t size = 0;
-			result = ktxTexture_WriteToMemory(ktx2, &pHead, &size);
+			result = ktxTexture_WriteToMemory(ktxTexture(ktx2), &pHead, &size);
 			m_Buffer->Append(pHead, size);
 		}
 		else {
@@ -2451,8 +2457,8 @@ public:
 			//if(fp)
 			//	result = ktxTexture_WriteToStdioStream(ktxTexture(ktx2), fp);
 			//fclose(fp);
-			result = ktxTexture_WriteToNamedFile(ktx2, m_file.c_str());
-			ktxTexture_Destroy(ktx2);
+			result = ktxTexture_WriteToNamedFile(ktxTexture(ktx2), m_file.c_str());
+			ktxTexture_Destroy(ktxTexture(ktx2));
 		}
 		return true;
 
