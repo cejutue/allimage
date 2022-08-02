@@ -18,11 +18,11 @@ int main()
 
     AImage* imgjpg = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\1.jpg");
 
-    int newWidth   = imgjpg->Width()     %   4  + imgjpg->Width();
-    int newHeight = imgjpg->Height()    %   4 + imgjpg->Height();
+    int newWidth   = 4 - imgjpg->Width()     %   4  + imgjpg->Width();
+    int newHeight = 4 - imgjpg->Height()    %   4 + imgjpg->Height();
     ARect rc(0, 0, imgjpg->Width(), imgjpg->Height());
     AImage g(newWidth, newHeight, imgjpg, rc);
-    //g.Save("D:\\mytoolss\\4.8\\threejs\\three.js\\examples\\textures\\compressed\\cj\\2.png", AImageEncodeType::ePNG);
+    g.Save("D:\\mytoolss\\4.8\\threejs\\three.js\\examples\\textures\\compressed\\cj\\2.png", AImageEncodeType::ePNG);
     g.Save("D:\\mytoolss\\4.8\\threejs\\three.js\\examples\\textures\\compressed\\cj\\1.ktx2", AImageEncodeType::eKTX2);
     //AImage* imgpng2 = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\1.ktx2");
     //imgpng2->Save("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\1aaa.png", AImageEncodeType::ePNG);

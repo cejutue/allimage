@@ -2326,32 +2326,24 @@ public:
 
 	bool ToKTX2(AImage* img)
 	{
+		if (!img)
+			return false;
 		AImage* pimg = img;
 		ktxTexture2* ktx2;
-		//ktx_error_code_e err;
 		ktx_error_code_e result;
 		ktxTextureCreateInfo createInfo;
 		ktx_uint8_t* pData = (ktx_uint8_t*)img->Bit();
 		AGrowByteBuffer buff;
-		createInfo.vkFormat = ToKtx2VkFormat(img->RGBAType());//VK_FORMAT_R8G8B8_UNORM;   // Ignored if creating a ktxTexture1.
+		createInfo.vkFormat = ToKtx2VkFormat(img->RGBAType());
+		bool IsNewImg = false;
 		if (pimg->Width() % 4 != 0 || pimg->Height() % 4 != 0)
 		{
-
-			//int newWidth = pimg->Width() % 4 + img->Width();
-			//int newHeight = pimg->Height() % 4 + img->Height();
-			//for (int i = 0; i < newHeight; i++)
-			//{
-			//	for (int j = 0; j < 0; j++)
-			//	{
-
-			//	}
-			//}
-			////ARect rc(0, 0, pimg->Width(), pimg->Height());
-			//AImage g(newWidth, newHeight, pimg, rc);
+			int newWidth = 4 - pimg->Width() % 4 + pimg->Width();
+			int newHeight = 4 - pimg->Height() % 4 + pimg->Height();
+			ARect rc(0, 0, pimg->Width(), pimg->Height());
+			pimg = new  AImage(newWidth, newHeight, pimg, rc);
+			IsNewImg = true;
 		}
-
-	
-		
 
 		createInfo.baseWidth = img->Width();
 		createInfo.baseHeight = img->Height();
@@ -2362,14 +2354,10 @@ public:
 		createInfo.numFaces = 1;
 		createInfo.isArray = KTX_FALSE;
 		createInfo.generateMipmaps = KTX_FALSE;
-
-		//ktx_uint32_t* dfd = vk2dfd((VkFormat)createInfo.vkFormat);
-		//if (!dfd)
-		//	return KTX_UNSUPPORTED_TEXTURE_TYPE;
-		//createInfo.pDfd = dfd;
 		result = ktxTexture2_Create(&createInfo, ktxTextureCreateStorageEnum::KTX_TEXTURE_CREATE_ALLOC_STORAGE, &ktx2);
 		result = ktxTexture_SetImageFromMemory(ktxTexture(ktx2), 0, 0, 0, pData, ktx2->dataSize);
 		if (KTX_SUCCESS != result) {
+			if (IsNewImg) delete pimg;
 			return false;
 		}
 
@@ -2442,6 +2430,7 @@ public:
 
 		if (KTX_SUCCESS != result)
 		{
+			if (IsNewImg) delete pimg;
 			return false;
 		}
 
@@ -2453,13 +2442,11 @@ public:
 			m_Buffer->Append(pHead, size);
 		}
 		else {
-			//FILE* fp = fopen(m_file.c_str(),"wb");
-			//if(fp)
-			//	result = ktxTexture_WriteToStdioStream(ktxTexture(ktx2), fp);
-			//fclose(fp);
+
 			result = ktxTexture_WriteToNamedFile(ktxTexture(ktx2), m_file.c_str());
 			ktxTexture_Destroy(ktxTexture(ktx2));
 		}
+		if (IsNewImg) delete pimg;
 		return true;
 
 	}
