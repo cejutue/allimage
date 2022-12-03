@@ -2328,12 +2328,7 @@ public:
 		if (!img)
 			return false;
 		AImage* pimg = img;
-		ktxTexture2* ktx2;
-		ktx_error_code_e result;
-		ktxTextureCreateInfo createInfo;
-
 		AGrowByteBuffer buff;
-		createInfo.vkFormat = ToKtx2VkFormat(img->RGBAType());
 		bool IsNewImg = false;
 		if (pimg->Width() % 4 != 0 || pimg->Height() % 4 != 0)
 		{
@@ -2344,9 +2339,17 @@ public:
 			IsNewImg = true;
 
 		}
-		ktx_uint8_t* pData = (ktx_uint8_t*)pimg->Bit();
-		createInfo.baseWidth = pimg->Width();
-		createInfo.baseHeight = pimg->Height();
+		if (!img)
+			return false;
+
+		ktxTexture2* ktx2 = nullptr;
+		ktx_error_code_e result;
+		ktxTextureCreateInfo createInfo;
+
+		createInfo.vkFormat = ToKtx2VkFormat(img->RGBAType());
+		ktx_uint8_t* pData = (ktx_uint8_t*)img->Bit();
+		createInfo.baseWidth = img->Width();
+		createInfo.baseHeight = img->Height();
 		createInfo.baseDepth = 1;
 		createInfo.numDimensions = 2;
 		createInfo.numLevels = 1;
@@ -2354,100 +2357,107 @@ public:
 		createInfo.numFaces = 1;
 		createInfo.isArray = KTX_FALSE;
 		createInfo.generateMipmaps = KTX_FALSE;
-		result = ktxTexture2_Create(&createInfo, ktxTextureCreateStorageEnum::KTX_TEXTURE_CREATE_ALLOC_STORAGE, &ktx2);
-		result = ktxTexture_SetImageFromMemory(ktxTexture(ktx2), 0, 0, 0, pData, ktx2->dataSize);
-		if (KTX_SUCCESS != result) {
-			if (IsNewImg) delete pimg;
-			return false;
-		}
 
-		stringstream writer;
-		writeId(writer, 1);
-		ktxHashList_AddKVPair(&ktx2->kvDataHead, KTX_WRITER_KEY,
-			(ktx_uint32_t)writer.str().length() + 1,
-			writer.str().c_str());
+		bool ret = true;
+		do {
+			result = ktxTexture2_Create(&createInfo, ktxTextureCreateStorageEnum::KTX_TEXTURE_CREATE_ALLOC_STORAGE, &ktx2);
+			if (KTX_SUCCESS != result) {
+				ret = false;
+				break;
+			}
 
-		string swizzle;
+			result = ktxTexture_SetImageFromMemory(ktxTexture(ktx2), 0, 0, 0, pData, ktx2->dataSize);
+			if (KTX_SUCCESS != result) {
+				ret = false;
+				break;
+			}
 
-		int threadcount = std::thread::hardware_concurrency() / 4;
-		if (threadcount <= 0)
-			threadcount = 1;
-		if (1 >= m_CompressType)
-		{
-			ktxBasisParams params = {};
-			params.structSize = sizeof(params);
-			params.threadCount =  threadcount;
-			params.uastc = m_CompressType;//0 Ä¬ÈÏ ETC1S/BLZ  1 uastc
-			params.compressionLevel = KTX_ETC1S_DEFAULT_COMPRESSION_LEVEL;
-			params.qualityLevel = m_QualityLevel;
-			params.uastcFlags = KTX_PACK_UASTC_LEVEL_FASTEST;
-			params.normalMap = false;
-			//std::string defaultSwizzle = "rrr0";
-			//for (int i = 0; i < 4; i++) {
-			//	params.inputSwizzle[i] = defaultSwizzle[i];
-			//}
-			params.normalMap = KTX_FALSE;
-			params.uastc = false;
-			params.verbose = false;
-			uint32_t componentCount, componentByteLength;
-			ktxTexture2_GetComponentInfo((ktxTexture2*)ktx2,
-				&componentCount,
-				&componentByteLength);
-			if (componentCount == 1 || componentCount == 2) {
-				params.separateRGToRGB_A = false;
-			} ktx_uint32_t transfer = ktxTexture2_GetOETF((ktxTexture2*)ktx2);
-			//
-			result = ktxTexture2_CompressBasisEx((ktxTexture2*)ktx2, &params);
+			std::stringstream writer;
+			writeId(writer, 1);
+			ktxHashList_AddKVPair(&ktx2->kvDataHead, KTX_WRITER_KEY,
+				(ktx_uint32_t)writer.str().length() + 1,
+				writer.str().c_str());
 
-		}
-		else
-		{
-			ktxAstcParams params{};
-			params.structSize = sizeof(params);
-			params.threadCount = threadcount;
-			params.blockDimension = KTX_PACK_ASTC_BLOCK_DIMENSION_6x6;
-			params.mode = KTX_PACK_ASTC_ENCODER_MODE_LDR;
-			params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM;
-			params.normalMap = false;
-			if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_FASTEST)
-				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_FASTEST;
-			if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_FAST)
-				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_FAST;
-			if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM)
+			int threadcount = 1;
+			if (1 >= m_CompressType)
+			{
+				ktxBasisParams params = {};
+				params.structSize = sizeof(params);
+				params.threadCount = threadcount;
+				params.uastc = m_CompressType;//0 Ä¬ÈÏETC1S/BLZ  1 uastc
+				params.compressionLevel = KTX_ETC1S_DEFAULT_COMPRESSION_LEVEL;
+				params.qualityLevel = m_QualityLevel;
+				params.normalMap = KTX_FALSE;
+				params.uastc = false;
+				params.verbose = false;
+				uint32_t componentCount, componentByteLength;
+				ktxTexture2_GetComponentInfo((ktxTexture2*)ktx2, &componentCount, &componentByteLength);
+				if (componentCount == 1 || componentCount == 2) {
+					params.separateRGToRGB_A = false;
+				}
+				result = ktxTexture2_CompressBasisEx((ktxTexture2*)ktx2, &params);// ktx_uint32_t(m_QualityLevel / 12));
+			}
+			else
+			{
+				ktxAstcParams params{};
+				params.structSize = sizeof(params);
+				params.threadCount = threadcount;
+				params.blockDimension = KTX_PACK_ASTC_BLOCK_DIMENSION_6x6;
+				params.mode = KTX_PACK_ASTC_ENCODER_MODE_LDR;
 				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM;
-			if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_THOROUGH)
-				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_THOROUGH;
-			if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_EXHAUSTIVE)
-				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_EXHAUSTIVE;
+				params.normalMap = false;
+				if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_FASTEST)
+					params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_FASTEST;
+				if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_FAST)
+					params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_FAST;
+				if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM)
+					params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM;
+				if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_THOROUGH)
+					params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_THOROUGH;
+				if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_EXHAUSTIVE)
+					params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_EXHAUSTIVE;
 
-			result = ktxTexture2_CompressAstcEx((ktxTexture2*)ktx2, &params);
-		}
+				result = ktxTexture2_CompressAstcEx((ktxTexture2*)ktx2, &params);
+			}
 
-		if (m_DeflateUseZstd)
-		{
-			result = ktxTexture2_DeflateZstd((ktxTexture2*)ktx2, ktx_uint32_t(m_QualityLevel / 12));
-		}
+			if (KTX_SUCCESS != result) {
+				ret = false;
+				break;
+			}
+
+			if (m_DeflateUseZstd) {
+				result = ktxTexture2_DeflateZstd((ktxTexture2*)ktx2, ktx_uint32_t(m_QualityLevel / 12));
+				if (KTX_SUCCESS != result) {
+					ret = false;
+					break;
+				}
+			}
+
+			if (m_Buffer) {
+				m_Buffer->Allocate(0);
+				ktx_uint8_t* pHead = nullptr;
+				ktx_size_t size = 0;
+				result = ktxTexture_WriteToMemory(ktxTexture(ktx2), &pHead, &size);
+				m_Buffer->Append(pHead, size);
+				if (pHead && size > 0)
+					free(pHead);
+			}
+			else {
+				result = ktxTexture_WriteToNamedFile(ktxTexture(ktx2), m_file.c_str());
+			}
+
+			if (KTX_SUCCESS != result) {
+				ret = false;
+				break;
+			}
+		} while (0);
 
 		if (KTX_SUCCESS != result)
-		{
-			if (IsNewImg) delete pimg;
-			return false;
-		}
+			std::cerr << " failed to deFlate ktxTexture2; " << ktxErrorString(result);
 
-		if (m_Buffer) {
-			m_Buffer->Allocate(0);
-			ktx_uint8_t* pHead = nullptr;
-			ktx_size_t size = 0;
-			result = ktxTexture_WriteToMemory(ktxTexture(ktx2), &pHead, &size);
-			m_Buffer->Append(pHead, size);
-		}
-		else {
-
-			result = ktxTexture_WriteToNamedFile(ktxTexture(ktx2), m_file.c_str());
+		if (ktx2)
 			ktxTexture_Destroy(ktxTexture(ktx2));
-		}
-		if (IsNewImg) delete pimg;
-		return true;
+		return ret;
 
 	}
 
