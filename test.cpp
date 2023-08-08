@@ -17,6 +17,7 @@ int main()
 {
 
     AImage* imgjpg = AImage::LoadFrom("D:\\opensource\\cjimage\\Debugx64\\imgtestdata\\1.jpg");
+    imgjpg->Save("D:\\mytoolss\\4.8\\threejs\\three.js\\examples\\textures\\compressed\\cj\\1.webp", AImageEncodeType::eWEBP);
     imgjpg->Save("D:\\mytoolss\\4.8\\threejs\\three.js\\examples\\textures\\compressed\\cj\\1.ktx2", AImageEncodeType::eKTX2);
     AImage* imgKtx2 = AImage::LoadFrom("D:\\mytoolss\\4.8\\threejs\\three.js\\examples\\textures\\compressed\\cj\\1.ktx2");
     imgKtx2->Save("D:\\mytoolss\\4.8\\threejs\\three.js\\examples\\textures\\compressed\\cj\\1.png", AImageEncodeType::ePNG);

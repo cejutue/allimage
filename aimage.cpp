@@ -2115,11 +2115,13 @@ bool WriteRow(AColorBandType inputType, unsigned char* webpargb, const unsigned 
 		FromRGB24 convert;
 		convert.ToARGBProcess(nLen / 4, (unsigned int*)pRow);
 	}
+	break;
 	case AColorBandType::eBGR24:
 	{
 		FromBGR24 convert;
 		convert.ToARGBProcess(nLen, (unsigned int*)pRow);
 	}
+	break;
 	default:
 		break;
 	}
@@ -2151,7 +2153,7 @@ bool SaveWEBP(ImageIO* IO, AImageHeaderInfo& info, AGrowByteBuffer* buff)
 		return false;
 	}
 	AColorBandType InputType = info.RGBAType;
-	m_Picture.use_argb = (((int)InputType <= 3) ? 1 : 0);
+	m_Picture.use_argb = 1;//(((int)InputType <= 3) ? 1 : 0);
 	m_Picture.width = info.Width;
 	m_Picture.height = info.Height;
 	m_Picture.argb_stride = info.Width;
@@ -2353,111 +2355,133 @@ public:
 		createInfo.baseDepth = 1;
 		createInfo.numDimensions = 2;
 		createInfo.numLevels = 1;
+		if (m_MipmapCount > 1)
+			createInfo.numLevels = log2(std::max(createInfo.baseWidth, createInfo.baseHeight)) + 1;
 		createInfo.numLayers = 1;
 		createInfo.numFaces = 1;
 		createInfo.isArray = KTX_FALSE;
 		createInfo.generateMipmaps = KTX_FALSE;
 
-		bool ret = true;
-		do {
-			result = ktxTexture2_Create(&createInfo, ktxTextureCreateStorageEnum::KTX_TEXTURE_CREATE_ALLOC_STORAGE, &ktx2);
-			if (KTX_SUCCESS != result) {
-				ret = false;
-				break;
-			}
-
-			result = ktxTexture_SetImageFromMemory(ktxTexture(ktx2), 0, 0, 0, pData, ktx2->dataSize);
-			if (KTX_SUCCESS != result) {
-				ret = false;
-				break;
-			}
-
-			std::stringstream writer;
-			writeId(writer, 1);
-			ktxHashList_AddKVPair(&ktx2->kvDataHead, KTX_WRITER_KEY,
-				(ktx_uint32_t)writer.str().length() + 1,
-				writer.str().c_str());
-
-			int threadcount = 1;
-			if (1 >= m_CompressType)
-			{
-				ktxBasisParams params = {};
-				params.structSize = sizeof(params);
-				params.threadCount = threadcount;
-				params.uastc = m_CompressType;//0 默认ETC1S/BLZ  1 uastc
-				params.compressionLevel = KTX_ETC1S_DEFAULT_COMPRESSION_LEVEL;
-				params.qualityLevel = m_QualityLevel;
-				params.normalMap = KTX_FALSE;
-				params.uastc = false;
-				params.verbose = false;
-				uint32_t componentCount, componentByteLength;
-				ktxTexture2_GetComponentInfo((ktxTexture2*)ktx2, &componentCount, &componentByteLength);
-				if (componentCount == 1 || componentCount == 2) {
-					params.separateRGToRGB_A = false;
+	 bool ret = true;
+        do {
+            result = ktxTexture2_Create(&createInfo, ktxTextureCreateStorageEnum::KTX_TEXTURE_CREATE_ALLOC_STORAGE, &ktx2);
+            if (KTX_SUCCESS != result) {
+                ret = false;
+                break;
+            }
+				AImage* ptrImage = img;
+				ktx_uint8_t* pData = (ktx_uint8_t*)img->Bit();
+				for (int i = 0; i < createInfo.numLevels; i++)
+				{
+					int w = createInfo.baseWidth;
+					int h = createInfo.baseHeight;
+					if (i > 0)
+					{
+						w = createInfo.baseWidth >> i;
+						h = createInfo.baseHeight >> i;
+						if (w < 1)
+							w = 1;
+						if (h < 1)
+							h = 1;
+						ptrImage = new AImage(w, h, img, ARect(0, 0, createInfo.baseWidth, createInfo.baseHeight));
+						pData = (ktx_uint8_t*)ptrImage->Bit();
+					}
+					result = ktxTexture_SetImageFromMemory(ktxTexture(ktx2), i, 0, 0, pData, w * h * 4);
+					if (i > 0)
+						delete ptrImage;
+					if (KTX_SUCCESS != result) {
+						ret = false;
+						break;
+					}
 				}
-				result = ktxTexture2_CompressBasisEx((ktxTexture2*)ktx2, &params);// ktx_uint32_t(m_QualityLevel / 12));
-			}
-			else
-			{
-				ktxAstcParams params{};
-				params.structSize = sizeof(params);
-				params.threadCount = threadcount;
-				params.blockDimension = KTX_PACK_ASTC_BLOCK_DIMENSION_6x6;
-				params.mode = KTX_PACK_ASTC_ENCODER_MODE_LDR;
-				params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM;
-				params.normalMap = false;
-				if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_FASTEST)
-					params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_FASTEST;
-				if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_FAST)
-					params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_FAST;
-				if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM)
-					params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM;
-				if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_THOROUGH)
-					params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_THOROUGH;
-				if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_EXHAUSTIVE)
-					params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_EXHAUSTIVE;
-
-				result = ktxTexture2_CompressAstcEx((ktxTexture2*)ktx2, &params);
-			}
-
-			if (KTX_SUCCESS != result) {
-				ret = false;
-				break;
-			}
-
-			if (m_DeflateUseZstd) {
-				result = ktxTexture2_DeflateZstd((ktxTexture2*)ktx2, ktx_uint32_t(m_QualityLevel / 12));
-				if (KTX_SUCCESS != result) {
-					ret = false;
+				if (!ret)
 					break;
-				}
-			}
+            std::stringstream writer;
+            writeId(writer, 1);
+            ktxHashList_AddKVPair(&ktx2->kvDataHead, KTX_WRITER_KEY,
+                (ktx_uint32_t)writer.str().length() + 1,
+                writer.str().c_str());
 
-			if (m_Buffer) {
-				m_Buffer->Allocate(0);
-				ktx_uint8_t* pHead = nullptr;
-				ktx_size_t size = 0;
-				result = ktxTexture_WriteToMemory(ktxTexture(ktx2), &pHead, &size);
-				m_Buffer->Append(pHead, size);
-				if (pHead && size > 0)
-					free(pHead);
-			}
-			else {
-				result = ktxTexture_WriteToNamedFile(ktxTexture(ktx2), m_file.c_str());
-			}
+            int threadcount = 1;
+            if (1 >= m_CompressType)
+            {
+                ktxBasisParams params = {};
+                params.structSize = sizeof(params);
+                params.threadCount = threadcount;
+                params.uastc = m_CompressType;//0 默认ETC1S/BLZ  1 uastc
+                params.compressionLevel = KTX_ETC1S_DEFAULT_COMPRESSION_LEVEL;
+                params.qualityLevel = m_QualityLevel;
+                params.normalMap = KTX_FALSE;
+                params.uastc = false;
+                params.verbose = false;
+                uint32_t componentCount, componentByteLength;
+                ktxTexture2_GetComponentInfo((ktxTexture2*)ktx2, &componentCount, &componentByteLength);
+                if (componentCount == 1 || componentCount == 2) {
+                    params.separateRGToRGB_A = false;
+                }
+                result = ktxTexture2_CompressBasisEx((ktxTexture2*)ktx2, &params);// ktx_uint32_t(m_QualityLevel / 12));
+            }
+            else
+            {
+                ktxAstcParams params{};
+                params.structSize = sizeof(params);
+                params.threadCount = threadcount;
+                params.blockDimension = KTX_PACK_ASTC_BLOCK_DIMENSION_6x6;
+                params.mode = KTX_PACK_ASTC_ENCODER_MODE_LDR;
+                params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM;
+                params.normalMap = false;
+                if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_FASTEST)
+                    params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_FASTEST;
+                if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_FAST)
+                    params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_FAST;
+                if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM)
+                    params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_MEDIUM;
+                if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_THOROUGH)
+                    params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_THOROUGH;
+                if (m_QualityLevel >= KTX_PACK_ASTC_QUALITY_LEVEL_EXHAUSTIVE)
+                    params.qualityLevel = KTX_PACK_ASTC_QUALITY_LEVEL_EXHAUSTIVE;
 
-			if (KTX_SUCCESS != result) {
-				ret = false;
-				break;
-			}
-		} while (0);
+                result = ktxTexture2_CompressAstcEx((ktxTexture2*)ktx2, &params);
+            }
 
-		if (KTX_SUCCESS != result)
-			std::cerr << " failed to deFlate ktxTexture2; " << ktxErrorString(result);
+            if (KTX_SUCCESS != result) {
+                ret = false;
+                break;
+            }
 
-		if (ktx2)
-			ktxTexture_Destroy(ktxTexture(ktx2));
-		return ret;
+            if (m_DeflateUseZstd) {
+                result = ktxTexture2_DeflateZstd((ktxTexture2*)ktx2, ktx_uint32_t(m_QualityLevel / 12));
+                if (KTX_SUCCESS != result) {
+                    ret = false;
+                    break;
+                }
+            }
+
+            if (m_Buffer) {
+                m_Buffer->Allocate(0);
+                ktx_uint8_t* pHead = nullptr;
+                ktx_size_t size = 0;
+                result = ktxTexture_WriteToMemory(ktxTexture(ktx2), &pHead, &size);
+                m_Buffer->Append(pHead, size);
+                if (pHead && size > 0)
+                    free(pHead);
+            }
+            else {
+                result = ktxTexture_WriteToNamedFile(ktxTexture(ktx2), m_file.c_str());
+            }
+
+            if (KTX_SUCCESS != result) {
+                ret = false;
+                break;
+            }
+        } while (0);
+
+        if (KTX_SUCCESS != result)
+            std::cerr << " failed to deFlate ktxTexture2; " << ktxErrorString(result);
+
+        if (ktx2)
+            ktxTexture_Destroy(ktxTexture(ktx2));
+        return ret;
 
 	}
 
@@ -2731,6 +2755,36 @@ bool AImage::Save(AGrowByteBuffer* buff, AImageEncodeType type)
 
 
 
+}
+
+bool AImage::ReSize(unsigned int nWidth, unsigned int nHeight, int nQuality)
+{
+	const unsigned char* head = Bit();
+	if (!head)
+	{
+		//自身无数据不允许resize
+		return false;
+	}
+	AGrowByteBuffer buffer;
+	buffer.Allocate(nWidth * nHeight * (m_Info.Bpp / 8));
+
+	if (nQuality < 0 || nQuality>5)
+	{
+		nQuality = 0;
+	}
+
+	if (1 == stbir__resize_arbitrary(NULL, head, m_Info.Width, m_Info.Width, Stride(),
+		buffer.BufferHead(), nWidth, nHeight, nWidth * m_Info.Bpp / 8,
+		0, 0, 1, 1, NULL, (m_Info.Bpp / 8), -1, 0, STBIR_TYPE_UINT8, (stbir_filter)nQuality, (stbir_filter)nQuality,
+		STBIR_EDGE_CLAMP, STBIR_EDGE_CLAMP, STBIR_COLORSPACE_LINEAR))
+	{
+		m_Info.Width = nWidth;
+		m_Info.Height = nHeight;
+		m_Buffer.Swap(buffer);
+		return true;
+	}
+	std::cerr << "GsSimpleBitmap::ReSize fail" << std::endl;
+	return false;
 }
 
 AImage* AImage::LoadFrom(const char* strFile)

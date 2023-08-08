@@ -1053,6 +1053,8 @@ public:
 	/// \return true 成功 false失败
 	virtual bool Save(AGrowByteBuffer* buff, AImageEncodeType type);
 
+
+	virtual bool ReSize(unsigned int w, unsigned int h, int nQuality);
 	/// \brief 从文件载入生成图像
 	/// \param strFile 
 	/// \return 
@@ -1087,6 +1089,7 @@ public:
 	/// \info 返回解析的图像头信息
 	/// \return 返回是否解析成功。
 	static bool ParseImageHeaderInfo(const unsigned char* blob, unsigned int len, AImageHeaderInfo* info);
+
 
 	static int RGBAIndex(AColorBandType t, char c);
 	static std::string MIMEType(AImageEncodeType eType);
